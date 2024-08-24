@@ -1,0 +1,26 @@
+/* Custom styles for header and body */
+
+/* Header styling */
+header {
+    background-color: #007bff; /* Bootstrap primary color */
+  }
+  
+  /* Custom text for navbar brand */
+  .navbar-brand {
+    font-size: 1.5rem;
+  }
+  
+  /* Center the main content */
+  main {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  /* Style the form */
+  form {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
