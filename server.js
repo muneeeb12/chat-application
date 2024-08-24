@@ -16,6 +16,7 @@ app.use(express.static(path.join(__dirname, 'static')));
 
 // Use routes
 app.use('/', require('./routes/homeRoutes'));
+app.use('/auth', require('./routes/authRoutes'));
 
 // Serve the chat page
 app.get('/chat', (req, res) => {

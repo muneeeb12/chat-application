@@ -1,4 +1,4 @@
-const { body } = require('express-validator');
+const { body, validationResult } = require('express-validator');
 
 // Validation rules for registration
 exports.registerValidationRules = () => {

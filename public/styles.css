@@ -5,10 +5,6 @@ header {
     background-color: #007bff; /* Bootstrap primary color */
   }
   
-  /* Custom text for navbar brand */
-  .navbar-brand {
-    font-size: 1.5rem;
-  }
   
   /* Center the main content */
   main {
@@ -24,3 +20,15 @@ header {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   }
   
+  .navbar-brand {
+    font-size: 1.5rem; /* Smaller size for the Chat App text */
+    display: flex;
+    align-items: center;
+  }
+  .navbar-brand .fa-comments {
+    font-size: 1.8rem; /* Adjust the size of the icon */
+    margin-right: 10px;
+  }
+  .navbar-nav {
+    margin-left: auto; /* Align the nav items to the right */
+  }
