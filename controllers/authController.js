@@ -85,9 +85,10 @@ exports.googleCallback = (req, res, next) => {
 exports.setPassword = async (req, res) => {
     try {
         const userId = req.params.id;
-
+        console.log(req.params.id);
         // Validate ObjectId
         if (!mongoose.Types.ObjectId.isValid(userId)) {
+            console.log('Issue here');
             return res.redirect('/auth/login');
         }
 
