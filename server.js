@@ -4,11 +4,12 @@ const { Server } = require('socket.io');
 const path = require('path');
 const passport = require('./config/passport'); // Adjust path if necessary
 const session = require('express-session');
-const flash = require('connect-flash');
 require('dotenv').config();
 
 const connectDb = require('./config/dbConnection');
 const app = express();
+// Set EJS as the view engine
+app.set('view engine', 'ejs');
 
 // Middleware to parse JSON and URL-encoded data
 app.use(express.json());
@@ -22,16 +23,10 @@ app.use(session({
     cookie: { secure: false } // Set to true if using HTTPS
 }));
 
-app.use(flash());
 
-// Middleware to make flash messages available to all views
-app.use((req, res, next) => {
-    res.locals.success_msg = req.flash('success_msg');
-    res.locals.error_msg = req.flash('error_msg');
-    res.locals.error = req.flash('error');
-    next();
-});
 
+// // Set the directory for your views (optional, default is 'views' folder in the root)
+// app.set('views', './views');
 
 // Initialize Passport
 app.use(passport.initialize());

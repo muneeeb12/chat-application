@@ -18,7 +18,7 @@ exports.showRegisterPage = (req, res) => {
 exports.showSetPasswordPage = async (req, res) => {
     try {
         const userId = req.params.id;
-
+        console.log(userId)
         // Validate ObjectId
         if (!mongoose.Types.ObjectId.isValid(userId)) {
             return res.redirect('/auth/login');
@@ -28,7 +28,8 @@ exports.showSetPasswordPage = async (req, res) => {
         if (!user || !user.isPending) {
             return res.redirect('/auth/login');
         }
-        res.sendFile(path.join(__dirname, '../views/set-password.html'));
+        console.log("successfull");
+        res.render('../views/set-password',{userId: userId});
     } catch (error) {
         console.error('Error retrieving user:', error);
         res.status(500).json({ message: 'Server error retrieving user' });
