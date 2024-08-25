@@ -15,6 +15,10 @@ router.post('/login', authController.loginUser);
 router.get('/google', authController.googleLogin);
 router.get('/google/callback', authController.googleCallback);
 
+// Password setup routes
+router.get('/set-password/:id', authController.showSetPasswordPage);
+router.post('/set-password/:id', authController.setPassword);
+
 // Logout route
 router.get('/logout', authController.logoutUser);
 

@@ -3,9 +3,37 @@ const Schema = mongoose.Schema;
 
 // Define the schema for the user
 const userSchema = new Schema({
-    username: { type: String, required: true, unique: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true }
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true // Allow null values
+  },
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true,
+    match: [/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Invalid email address']
+  },
+  password: {
+    type: String,
+    minlength: 8
+  },
+  isPending: {
+    type: Boolean,
+    default: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 // Create a model from the schema

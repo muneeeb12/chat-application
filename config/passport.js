@@ -57,7 +57,7 @@ passport.use(new GoogleStrategy({
                 googleId: profile.id,
                 username: profile.displayName,
                 email: profile.emails[0].value,
-                // password is not needed for Google OAuth users
+                isPending: true // Mark as pending registration
             });
             await user.save();
             return done(null, user);
@@ -66,5 +66,6 @@ passport.use(new GoogleStrategy({
         return done(err);
     }
 }));
+
 
 module.exports = passport;
