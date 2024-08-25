@@ -1,6 +1,7 @@
 const path = require('path');
 const passport = require('passport');
 const bcrypt = require('bcrypt');
+const mongoose = require('mongoose');
 const User = require('../models/User');
 
 // Show login page
@@ -16,7 +17,14 @@ exports.showRegisterPage = (req, res) => {
 // Show set password page
 exports.showSetPasswordPage = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const userId = req.params.id;
+
+        // Validate ObjectId
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.redirect('/auth/login');
+        }
+
+        const user = await User.findById(userId);
         if (!user || !user.isPending) {
             return res.redirect('/auth/login');
         }
@@ -56,17 +64,16 @@ exports.loginUser = passport.authenticate('local', {
 exports.googleLogin = passport.authenticate('google', { scope: ['profile', 'email'] });
 
 // Handle Google OAuth callback
-// Handle Google OAuth callback
 exports.googleCallback = (req, res, next) => {
     passport.authenticate('google', (err, user, info) => {
         if (err) return next(err);
-        if (!user) return res.redirect('/auth/login');
-        
-        // Check if the user is pending registration
-        if (user.isPending) {
-            return res.redirect(`/auth/set-password/${user._id}`); // Redirect to password setup page
+
+        if (info && info.message && info.message.startsWith('/auth/set-password/')) {
+            return res.redirect(info.message); // Redirect to password setup page
         }
-        
+
+        if (!user) return res.redirect('/auth/login');
+
         req.logIn(user, (err) => {
             if (err) return next(err);
             return res.redirect('/chat'); // Redirect to chat if user is logged in
@@ -77,21 +84,34 @@ exports.googleCallback = (req, res, next) => {
 // Handle password setup
 exports.setPassword = async (req, res) => {
     try {
+        const userId = req.params.id;
+
+        // Validate ObjectId
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.redirect('/auth/login');
+        }
+
         const { password } = req.body;
-        const user = await User.findById(req.params.id);
-        
+
+        if (!password) {
+            return res.status(400).json({ message: 'Password is required' });
+        }
+
+        const user = await User.findById(userId);
+
         if (!user || !user.isPending) {
             return res.redirect('/auth/login');
         }
-        
+
         const hashedPassword = await bcrypt.hash(password, 10);
         user.password = hashedPassword;
         user.isPending = false; // Mark registration as complete
         await user.save();
-        
+
         // Log in the user and redirect to chat
         req.login(user, err => {
             if (err) {
+                console.error('Error during login:', err);
                 return res.redirect('/auth/login');
             }
             res.redirect('/chat');
@@ -103,7 +123,7 @@ exports.setPassword = async (req, res) => {
 };
 
 // Handle logout
-exports.logoutUser = (req, res) => {
+exports.logoutUser = (req, res, next) => {
     req.logout(err => {
         if (err) {
             return next(err);

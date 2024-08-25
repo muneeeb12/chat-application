@@ -3,7 +3,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
-require('dotenv').config(); // Call config() to load .env variables
+require('dotenv').config(); // Load .env variables
 
 // Serialize user for session
 passport.serializeUser((user, done) => {
@@ -51,6 +51,9 @@ passport.use(new GoogleStrategy({
         let user = await User.findOne({ googleId: profile.id });
 
         if (user) {
+            if (user.isPending) {
+                return done(null, user, { message: `/auth/set-password/${user._id}` });
+            }
             return done(null, user);
         } else {
             user = new User({
@@ -60,12 +63,11 @@ passport.use(new GoogleStrategy({
                 isPending: true // Mark as pending registration
             });
             await user.save();
-            return done(null, user);
+            return done(null, user, { message: `/auth/set-password/${user._id}` });
         }
     } catch (err) {
         return done(err);
     }
 }));
-
 
 module.exports = passport;
