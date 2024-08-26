@@ -32,3 +32,21 @@ header {
   .navbar-nav {
     margin-left: auto; /* Align the nav items to the right */
   }
+
+  /* public/styles.css */
+.search-results {
+  margin-top: 10px;
+}
+
+.result-item {
+  padding: 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+
+.result-item:hover {
+  background-color: #e9ecef;
+}

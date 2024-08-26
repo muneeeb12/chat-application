@@ -7,5 +7,12 @@ exports.showHomePage = (req, res) => {
 
 // Show dashboard page
 exports.showDashboardPage = (req, res) => {
-  res.render('dashboard', { user: req.user });
+  // Assuming you're using Passport.js and the user is authenticated
+  const user = req.user; // This should contain the user object from the session
+  
+  if (!user) {
+      return res.redirect('/auth/login'); // Redirect to login if the user is not authenticated
+  }
+  
+  res.render('dashboard', { user });
 };

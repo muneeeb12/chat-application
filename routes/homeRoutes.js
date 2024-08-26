@@ -6,4 +6,5 @@ const homeController = require('../controllers/homeController');
 router.get('/', homeController.showHomePage);
 router.get('/dashboard', homeController.showDashboardPage);
 
+
 module.exports = router;

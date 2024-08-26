@@ -6,7 +6,7 @@
   <title>Chat App - Dashboard</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link rel="stylesheet" href="/public/styles.css">
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <header class="bg-primary text-white py-2 mb-4">
@@ -15,71 +15,75 @@
         <a class="navbar-brand" href="/">
           <i class="fas fa-comments"></i> Chat App
         </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-              <a class="nav-link" href="/dashboard">Dashboard</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/auth/logout">Logout</a>
-            </li>
-          </ul>
-        </div>
       </nav>
     </div>
   </header>
 
-  <div class="container-fluid">
-    <div class="row">
-      <aside class="col-md-3 bg-light sidebar">
-        <div class="profile text-center py-4">
-          <h4 class="d-block">Username: <%= user.username %></h4>
-        </div>
-        <nav class="nav flex-column">
-          <a class="nav-link active" href="#chat">Chat</a>
-          <a class="nav-link" href="#chat-rooms">Chat Rooms</a>
-          <!-- Other menu items -->
-        </nav>
-      </aside>
-
-      <main class="col-md-9">
-        <section class="chat-list mb-4">
-          <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Search..." aria-label="Search">
-            <div class="input-group-append">
-              <button class="btn btn-outline-secondary" type="button">Search</button>
-            </div>
-          </div>
-          <div class="chat-items">
-            <!-- Dynamically generate chat items here -->
-          </div>
-        </section>
-
-        <section class="chat-window">
-          <header class="chat-header bg-light py-2 px-3 mb-3 d-flex align-items-center">
-            <h5 class="mr-3">Friend's Name</h5>
-          </header>
-          <div class="messages bg-white p-3 border rounded mb-3" style="height: 300px; overflow-y: auto;">
-            <!-- Dynamically generate messages here -->
-          </div>
-          <footer class="chat-input bg-light p-3 border-top">
-            <div class="input-group">
-              <input type="text" class="form-control" placeholder="Type a message..." aria-label="Type a message">
-              <div class="input-group-append">
-                <button class="btn btn-primary" type="button">Send</button>
-              </div>
-            </div>
-          </footer>
-        </section>
-      </main>
+  <div class="container">
+    <div class="input-group mb-3">
+      <input id="user-search-input" type="text" class="form-control" placeholder="Search users by username..." aria-label="Search">
+      <div class="input-group-append">
+        <button class="btn btn-outline-secondary" type="button">Search</button>
+      </div>
+    </div>
+    <div class="search-results">
+      <!-- Dynamically generated search results will be inserted here -->
     </div>
   </div>
 
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.11/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="/dashboard.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const searchInput = document.querySelector('#user-search-input');
+      const searchButton = document.querySelector('.input-group-append button');
+      const searchResults = document.querySelector('.search-results');
+
+      // Function to perform the search
+      async function performSearch() {
+        const query = searchInput.value.trim();
+        console.log('Search query:', query);
+
+        if (query.length > 0) {
+          try {
+            const response = await fetch(`/users/search?q=${encodeURIComponent(query)}`);
+            console.log('Response status:', response.status);
+            const users = await response.json();
+            console.log('Users found:', users);
+            
+            // Clear previous results
+            searchResults.innerHTML = '';
+
+            if (users.length > 0) {
+              users.forEach(user => {
+                const resultItem = document.createElement('div');
+                resultItem.classList.add('result-item');
+                resultItem.textContent = user.username;
+                searchResults.appendChild(resultItem);
+              });
+            } else {
+              searchResults.innerHTML = '<p>No users found.</p>';
+            }
+          } catch (error) {
+            console.log('Error fetching search results:', error);
+          }
+        } else {
+          searchResults.innerHTML = ''; // Clear results if input is empty
+        }
+      }
+
+      // Trigger search when user types
+      searchInput.addEventListener('input', performSearch);
+
+      // Trigger search when user clicks the search button
+      searchButton.addEventListener('click', function() {
+        console.log('Search button clicked');
+        performSearch();
+      });
+    });
+  </script>
 </body>
 </html>

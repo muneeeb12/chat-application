@@ -34,6 +34,7 @@ app.use(express.static(path.join(__dirname, 'static')));
 // Use routes
 app.use('/', require('./routes/homeRoutes'));
 app.use('/auth', require('./routes/authRoutes'));
+app.use('/users', require('./routes/userRoutes'));
 
 
 connectDb(); // Connect to the database
