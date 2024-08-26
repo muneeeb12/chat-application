@@ -18,7 +18,6 @@ exports.showRegisterPage = (req, res) => {
 exports.showSetPasswordPage = async (req, res) => {
     try {
         const userId = req.params.id;
-        console.log(userId)
         // Validate ObjectId
         if (!mongoose.Types.ObjectId.isValid(userId)) {
             return res.redirect('/auth/login');
@@ -28,8 +27,7 @@ exports.showSetPasswordPage = async (req, res) => {
         if (!user || !user.isPending) {
             return res.redirect('/auth/login');
         }
-        console.log("successfull");
-        res.render('../views/set-password',{userId: userId});
+        res.render('set-password', { userId }); // Adjusted to use the view name directly
     } catch (error) {
         console.error('Error retrieving user:', error);
         res.status(500).json({ message: 'Server error retrieving user' });
@@ -56,7 +54,7 @@ exports.registerUser = async (req, res) => {
 
 // Handle local login
 exports.loginUser = passport.authenticate('local', {
-    successRedirect: '/chat',
+    successRedirect: '/dashboard',
     failureRedirect: '/auth/login',
     failureFlash: true
 });
@@ -77,7 +75,7 @@ exports.googleCallback = (req, res, next) => {
 
         req.logIn(user, (err) => {
             if (err) return next(err);
-            return res.redirect('/chat'); // Redirect to chat if user is logged in
+            return res.redirect('/dashboard'); // Redirect to dashboard if user is logged in
         });
     })(req, res, next);
 };
@@ -86,10 +84,8 @@ exports.googleCallback = (req, res, next) => {
 exports.setPassword = async (req, res) => {
     try {
         const userId = req.params.id;
-        console.log(req.params.id);
         // Validate ObjectId
         if (!mongoose.Types.ObjectId.isValid(userId)) {
-            console.log('Issue here');
             return res.redirect('/auth/login');
         }
 
@@ -110,13 +106,13 @@ exports.setPassword = async (req, res) => {
         user.isPending = false; // Mark registration as complete
         await user.save();
 
-        // Log in the user and redirect to chat
+        // Log in the user and redirect to dashboard
         req.login(user, err => {
             if (err) {
                 console.error('Error during login:', err);
                 return res.redirect('/auth/login');
             }
-            res.redirect('/chat');
+            res.redirect('/dashboard');
         });
     } catch (error) {
         console.error('Error during password setup:', error);
