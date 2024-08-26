@@ -96,11 +96,20 @@ exports.googleCallback = (req, res, next) => {
             return res.redirect(info.message); // Redirect to password setup page
         }
 
-        if (!user) return res.redirect('/auth/login');
-
-        req.logIn(user, (err) => {
+        req.logIn(user, async (err) => {
             if (err) return next(err);
-            return res.redirect('/dashboard'); // Redirect to dashboard if user is logged in
+
+            try {
+                // Update user status to "Online"
+                await User.findByIdAndUpdate(user._id, { status: 'Online' });
+
+                // Redirect to the chat page on successful login
+                return res.redirect('/dashboard');
+            } catch (error) {
+                // Handle any errors during the update
+                console.error('Error updating user status:', error);
+                return next(error);
+            }
         });
     })(req, res, next);
 };
