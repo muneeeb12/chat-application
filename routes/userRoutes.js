@@ -1,14 +1,20 @@
-// routes/userRoutes.js
 const express = require('express');
 const router = express.Router();
-const userController = require('../controllers/userController');
+const usersController = require('../controllers/userController');
 
-// Route to search for users
-router.get('/search', userController.searchUsers);
+// Search users
+router.get('/search', usersController.searchUsers);
 
-router.post('/friends/request',userController.sendrequest)
-router.post('/friends/accept',userController.acceptrequest)
-router.post('/friends/reject',userController.rejectrequest);
+// Send a friend request
+router.post('/friends/request', usersController.sendFriendRequest);
 
+// Accept a friend request
+router.post('/friends/accept', usersController.acceptFriendRequest);
+
+// Reject a friend request
+router.post('/friends/reject', usersController.rejectFriendRequest);
+
+// Get friend requests
+router.get('/friends/requests', usersController.getFriendRequests);
 
 module.exports = router;

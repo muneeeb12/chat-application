@@ -29,6 +29,12 @@
     <div class="search-results">
       <!-- Dynamically generated search results will be inserted here -->
     </div>
+
+    <!-- Section for displaying friend requests -->
+    <div class="friend-requests mt-4">
+      <h3>Friend Requests</h3>
+      <!-- Dynamically generated friend requests will be inserted here -->
+    </div>
   </div>
 
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -37,77 +43,143 @@
   <script src="/dashboard.js"></script>
 
   <script>
-   document.addEventListener('DOMContentLoaded', function() {
-    
-    const searchInput = document.querySelector('#user-search-input');
-    const searchButton = document.querySelector('.input-group-append button');
-    const searchResults = document.querySelector('.search-results');
+    document.addEventListener('DOMContentLoaded', function() {
+      const searchInput = document.querySelector('#user-search-input');
+      const searchButton = document.querySelector('.input-group-append button');
+      const searchResults = document.querySelector('.search-results');
+      const friendRequestsContainer = document.querySelector('.friend-requests');
 
-    // Function to perform the search
-    async function performSearch() {
+      // Function to perform the search
+      async function performSearch() {
         const query = searchInput.value.trim();
-        console.log('Search query:', query);
-
         if (query.length > 0) {
-            try {
-                const response = await fetch(`/users/search?q=${encodeURIComponent(query)}`);
-                const users = await response.json();
-                
-                // Clear previous results
-                searchResults.innerHTML = '';
+          try {
+            const response = await fetch(`/users/search?q=${encodeURIComponent(query)}`);
+            const users = await response.json();
+            searchResults.innerHTML = '';
 
-                if (users.length > 0) {
-                    users.forEach(user => {
-                        const resultItem = document.createElement('div');
-                        resultItem.classList.add('result-item');
-                        resultItem.textContent = user.username;
+            if (users.length > 0) {
+              users.forEach(user => {
+                const resultItem = document.createElement('div');
+                resultItem.classList.add('result-item');
+                resultItem.textContent = user.username;
 
-                        // Create "Add Friend" button
-                        const addFriendButton = document.createElement('button');
-                        addFriendButton.textContent = 'Add Friend';
-                        addFriendButton.addEventListener('click', () => sendFriendRequest(user._id));
+                // Create "Add Friend" button
+                const addFriendButton = document.createElement('button');
+                addFriendButton.textContent = 'Add Friend';
+                addFriendButton.classList.add('add-friend-button');
+                addFriendButton.addEventListener('click', () => sendFriendRequest(user._id));
 
-                        resultItem.appendChild(addFriendButton);
-                        searchResults.appendChild(resultItem);
-                    });
-                } else {
-                    searchResults.innerHTML = '<p>No users found.</p>';
-                }
-            } catch (error) {
-                console.log('Error fetching search results:', error);
+                resultItem.appendChild(addFriendButton);
+                searchResults.appendChild(resultItem);
+              });
+            } else {
+              searchResults.innerHTML = '<p>No users found.</p>';
             }
+          } catch (error) {
+            console.log('Error fetching search results:', error);
+          }
         } else {
-            searchResults.innerHTML = ''; // Clear results if input is empty
+          searchResults.innerHTML = ''; // Clear results if input is empty
         }
-    }
+      }
 
-    // Function to send a friend request
-    async function sendFriendRequest(recipientId) {
+      // Function to send a friend request
+      async function sendFriendRequest(recipientId) {
         try {
-            const response = await fetch('/friends/request', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ recipientId })
-            });
+          const response = await fetch('/users/friends/request', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ recipientId })
+          });
 
-            const result = await response.json();
-            alert(result.message); // Display success message or handle error
+          const result = await response.json();
+          alert(result.message); // Display success message or handle error
         } catch (error) {
-            console.log('Error sending friend request:', error);
+          console.log('Error sending friend request:', error);
         }
-    }
+      }
 
-    // Trigger search when user types
-    searchInput.addEventListener('input', performSearch);
+      // Function to accept a friend request
+      async function acceptFriendRequest(requesterId) {
+        try {
+          const response = await fetch('/users/friends/accept', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ requesterId })
+          });
 
-    // Trigger search when user clicks the search button
-    searchButton.addEventListener('click', function() {
-        performSearch();
+          const result = await response.json();
+          alert(result.message); // Display success message or handle error
+        } catch (error) {
+          console.log('Error accepting friend request:', error);
+        }
+      }
+
+      // Function to reject a friend request
+      async function rejectFriendRequest(requesterId) {
+        try {
+          const response = await fetch('/users/friends/reject', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ requesterId })
+          });
+
+          const result = await response.json();
+          alert(result.message); // Display success message or handle error
+        } catch (error) {
+          console.log('Error rejecting friend request:', error);
+        }
+      }
+
+      // Function to load friend requests
+      async function loadFriendRequests() {
+        try {
+          const response = await fetch('/users/friends/requests');
+          const requests = await response.json();
+          friendRequestsContainer.innerHTML = '<h3>Friend Requests</h3>';
+
+          requests.forEach(request => {
+            const requestItem = document.createElement('div');
+            requestItem.classList.add('request-item');
+            requestItem.textContent = request.requesterUsername;
+
+            // Create "Accept" button
+            const acceptButton = document.createElement('button');
+            acceptButton.textContent = 'Accept';
+            acceptButton.classList.add('accept-button');
+            acceptButton.addEventListener('click', () => acceptFriendRequest(request.requesterId));
+
+            // Create "Reject" button
+            const rejectButton = document.createElement('button');
+            rejectButton.textContent = 'Reject';
+            rejectButton.classList.add('reject-button');
+            rejectButton.addEventListener('click', () => rejectFriendRequest(request.requesterId));
+
+            requestItem.appendChild(acceptButton);
+            requestItem.appendChild(rejectButton);
+            friendRequestsContainer.appendChild(requestItem);
+          });
+        } catch (error) {
+          console.log('Error loading friend requests:', error);
+        }
+      }
+
+      // Trigger search when user types
+      searchInput.addEventListener('input', performSearch);
+
+      // Trigger search when user clicks the search button
+      searchButton.addEventListener('click', performSearch);
+
+      // Load friend requests on page load
+      loadFriendRequests();
     });
-});
-
   </script>
 </body>
 </html>

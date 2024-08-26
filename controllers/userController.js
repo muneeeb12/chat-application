@@ -18,69 +18,98 @@ exports.searchUsers = async (req, res) => {
   }
 };
 
-exports.sendrequest =  async (req, res) => {
+// Send a friend request
+exports.sendFriendRequest = async (req, res) => {
   const { recipientId } = req.body;
+  const requesterId = req.user._id; // Assuming you have user info in req.user
 
   try {
-      const outgoingFriendship = new OutgoingFriendship({
-          requester: req.user._id,
-          recipient: recipientId
-      });
+    // Check if the request already exists
+    const existingRequest = await IncomingFriendship.findOne({ requester: requesterId, recipient: recipientId }).exec();
+    if (existingRequest) {
+      return res.json({ message: 'Friend request already sent' });
+    }
 
-      const incomingFriendship = new IncomingFriendship({
-          requester: req.user._id,
-          recipient: recipientId
-      });
+    // Create a new incoming friend request
+    const newRequest = new IncomingFriendship({ requester: requesterId, recipient: recipientId });
+    await newRequest.save();
 
-      await outgoingFriendship.save();
-      await incomingFriendship.save();
+    // Create a new outgoing friend request
+    const newOutgoingRequest = new OutgoingFriendship({ requester: requesterId, recipient: recipientId });
+    await newOutgoingRequest.save();
 
-      res.status(200).json({ message: 'Friend request sent successfully!' });
-  } catch (err) {
-      console.error('Error sending friend request:', err);
-      res.status(500).json({ error: 'Failed to send friend request' });
+    res.json({ message: 'Friend request sent' });
+  } catch (error) {
+    console.error('Error sending friend request:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-}
+};
 
 // Accept a friend request
-exports.acceptrequest = async (req, res) => {
+exports.acceptFriendRequest = async (req, res) => {
   const { requesterId } = req.body;
+  const recipientId = req.user._id; // Assuming you have user info in req.user
 
   try {
-      await OutgoingFriendship.findOneAndUpdate(
-          { requester: requesterId, recipient: req.user._id, status: 'Pending' },
-          { status: 'Accepted' }
-      );
+    // Update the status of the incoming friend request
+    await IncomingFriendship.findOneAndUpdate(
+      { requester: requesterId, recipient: recipientId },
+      { status: 'Accepted' },
+      { new: true }
+    ).exec();
 
-      await IncomingFriendship.findOneAndUpdate(
-          { requester: requesterId, recipient: req.user._id, status: 'Pending' },
-          { status: 'Accepted' }
-      );
+    // Update the status of the outgoing friend request
+    await OutgoingFriendship.findOneAndUpdate(
+      { requester: requesterId, recipient: recipientId },
+      { status: 'Accepted' },
+      { new: true }
+    ).exec();
 
-      res.status(200).json({ message: 'Friend request accepted successfully!' });
-  } catch (err) {
-      console.error('Error accepting friend request:', err);
-      res.status(500).json({ error: 'Failed to accept friend request' });
+    res.json({ message: 'Friend request accepted' });
+  } catch (error) {
+    console.error('Error accepting friend request:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-}
+};
 
 // Reject a friend request
-exports.rejectrequest =  async (req, res) => {
+exports.rejectFriendRequest = async (req, res) => {
   const { requesterId } = req.body;
+  const recipientId = req.user._id; // Assuming you have user info in req.user
 
   try {
-      await OutgoingFriendship.findOneAndUpdate(
-          { requester: requesterId, recipient: req.user._id, status: 'Pending' },
-          { status: 'Rejected' }
-      );
+    // Update the status of the incoming friend request
+    await IncomingFriendship.findOneAndUpdate(
+      { requester: requesterId, recipient: recipientId },
+      { status: 'Rejected' },
+      { new: true }
+    ).exec();
 
-      await IncomingFriendship.findOneAndUpdate(
-          { requester: requesterId, recipient: req.user._id, status: 'Rejected' }
-      );
+    // Remove the outgoing friend request
+    await OutgoingFriendship.findOneAndDelete({ requester: requesterId, recipient: recipientId }).exec();
 
-      res.status(200).json({ message: 'Friend request rejected successfully!' });
-  } catch (err) {
-      console.error('Error rejecting friend request:', err);
-      res.status(500).json({ error: 'Failed to reject friend request' });
+    res.json({ message: 'Friend request rejected' });
+  } catch (error) {
+    console.error('Error rejecting friend request:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-}
+};
+
+// Get friend requests for the current user
+exports.getFriendRequests = async (req, res) => {
+  const recipientId = req.user._id; // Assuming you have user info in req.user
+
+  try {
+    const requests = await IncomingFriendship.find({ recipient: recipientId, status: 'Pending' })
+      .populate('requester', 'username')
+      .exec();
+
+    res.json(requests.map(request => ({
+      requesterId: request.requester._id,
+      requesterUsername: request.requester.username
+    })));
+  } catch (error) {
+    console.error('Error fetching friend requests:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
