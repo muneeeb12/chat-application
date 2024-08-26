@@ -54,12 +54,35 @@ exports.registerUser = async (req, res) => {
     }
 };
 
+exports.loginUser = (req, res, next) => {
+    passport.authenticate('local', async (err, user, info) => {
+        if (err) return next(err);
+        if (!user) return res.redirect('/auth/login'); // Redirect if authentication fails
+
+        req.logIn(user, async (err) => {
+            if (err) return next(err);
+
+            try {
+                // Update user status to "Online"
+                await User.findByIdAndUpdate(user._id, { status: 'Online' });
+
+                // Redirect to the chat page on successful login
+                return res.redirect('/chat');
+            } catch (error) {
+                // Handle any errors during the update
+                console.error('Error updating user status:', error);
+                return next(error);
+            }
+        });
+    })(req, res, next);
+};
 // Handle local login
-exports.loginUser = passport.authenticate('local', {
-    successRedirect: '/chat',
-    failureRedirect: '/auth/login',
-    failureFlash: true
-});
+// exports.loginUser = passport.authenticate('local', {
+    
+//     successRedirect: '/chat',
+//     failureRedirect: '/auth/login',
+//     failureFlash: true
+// });
 
 // Handle Google login
 exports.googleLogin = passport.authenticate('google', { scope: ['profile', 'email'] });
@@ -107,7 +130,8 @@ exports.setPassword = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
         user.password = hashedPassword;
-        user.isPending = false; // Mark registration as complete
+        user.isPending = false; 
+        await User.findByIdAndUpdate(user._id, { status: 'Online' });// Mark registration as complete
         await user.save();
 
         // Log in the user and redirect to chat
@@ -126,10 +150,15 @@ exports.setPassword = async (req, res) => {
 
 // Handle logout
 exports.logoutUser = (req, res, next) => {
-    req.logout(err => {
+    User.findByIdAndUpdate(req.user._id, { status: 'Offline' }, (err) => {
         if (err) {
-            return next(err);
+            console.error('Error updating user status on logout:', err);
         }
-        res.redirect('/');
+        req.logout(err => {
+            if (err) {
+                return next(err);
+            }
+            res.redirect('/');
+        });
     });
 };
