@@ -147,16 +147,29 @@ exports.setPassword = async (req, res) => {
 };
 
 // Handle logout
-exports.logoutUser = (req, res, next) => {
-    User.findByIdAndUpdate(req.user._id, { status: 'Offline' }, (err) => {
-        if (err) {
-            console.error('Error updating user status on logout:', err);
-        }
+exports.logoutUser = async (req, res, next) => {
+    if (!req.user || !req.user._id) {
+        console.error('User is not authenticated or user ID is missing');
+        return res.redirect('/'); // Redirect to home if user is not authenticated
+    }
+
+    try {
+        // Update user status to 'Offline'
+        await User.findByIdAndUpdate(req.user._id, { status: 'Offline' });
+
+        // Log out the user
         req.logout(err => {
             if (err) {
-                return next(err);
+                console.error('Error during logout:', err);
+                return next(err); // Pass the error to the next middleware
             }
-            res.redirect('/');
+
+            res.redirect('/'); // Redirect to home page after successful logout
         });
-    });
+    } catch (error) {
+        console.error('Error updating user status on logout:', error);
+        return next(error); // Pass the error to the next middleware
+    }
 };
+
+
