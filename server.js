@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const { Server } = require('socket.io');
 const path = require('path');
@@ -8,8 +7,10 @@ require('dotenv').config();
 
 const connectDb = require('./config/dbConnection');
 const app = express();
+
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 // Middleware to parse JSON and URL-encoded data
 app.use(express.json());
@@ -23,11 +24,6 @@ app.use(session({
     cookie: { secure: false } // Set to true if using HTTPS
 }));
 
-
-
-// // Set the directory for your views (optional, default is 'views' folder in the root)
-// app.set('views', './views');
-
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
@@ -39,29 +35,9 @@ app.use(express.static(path.join(__dirname, 'static')));
 app.use('/', require('./routes/homeRoutes'));
 app.use('/auth', require('./routes/authRoutes'));
 
-// Serve the chat page
-app.get('/chat', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'chat.html'));
-});
 
 connectDb(); // Connect to the database
 
 const server = app.listen(process.env.PORT || 3000, () => {
     console.log(`Server is running on port ${process.env.PORT || 3000}`);
-
-});
-
-const io = new Server(server);
-const chatNamespace = io.of('/chat');
-
-chatNamespace.on('connection', (socket) => {
-    console.log('A user connected to the chat namespace');
-  
-    socket.on('message', (message) => {
-        chatNamespace.emit('message', message);
-    });
-
-    socket.on('disconnect', () => {
-        console.log('A user disconnected from the chat namespace');
-    });
 });

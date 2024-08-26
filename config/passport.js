@@ -52,10 +52,13 @@ passport.use(new GoogleStrategy({
 
         if (user) {
             if (user.isPending) {
+                // Redirect to set password page if registration is pending
                 return done(null, user, { message: `/auth/set-password/${user._id}` });
             }
-            return done(null, user);
+            // Redirect to dashboard if user is already registered and not pending
+            return done(null, user, { message: '/dashboard' });
         } else {
+            // Create a new user and redirect to set password page
             user = new User({
                 googleId: profile.id,
                 username: profile.displayName,
