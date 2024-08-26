@@ -30,6 +30,9 @@ const userSchema = new Schema({
     type: Boolean,
     default: true
   },
+  status: { 
+    type: String,
+    enum: ['Online', 'Offline', 'Busy'], default: 'Offline' },
   createdAt: {
     type: Date,
     default: Date.now
