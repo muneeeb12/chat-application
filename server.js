@@ -28,8 +28,8 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Serve static files from the "static" directory
-app.use(express.static(path.join(__dirname, 'static')));
+// Serve static files from the "public" directory
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Use routes
 app.use('/', require('./routes/homeRoutes'));

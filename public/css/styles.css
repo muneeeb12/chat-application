@@ -1,0 +1,88 @@
+/* Custom styles for header and body */
+header {
+  background-color: #007bff; /* Bootstrap primary color */
+}
+
+/* Center the main content */
+main {
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* Style the form */
+form {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+  font-size: 1.5rem; /* Smaller size for the Chat App text */
+  display: flex;
+  align-items: center;
+}
+
+.navbar-brand .fa-comments {
+  font-size: 1.8rem; /* Adjust the size of the icon */
+  margin-right: 10px;
+}
+
+.navbar-nav {
+  margin-left: auto; /* Align the nav items to the right */
+}
+
+.search-container {
+  margin-bottom: 1.5rem;
+}
+
+.search-input {
+  max-width: 300px; /* Adjust width as needed */
+}
+
+.requests-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.requests-box {
+  flex: 1;
+  margin: 0 0.5rem;
+  background: #f8f9fa; /* Background for request boxes */
+  border: 1px solid #dee2e6; /* Border for request boxes */
+  border-radius: 8px; /* Rounded corners for request boxes */
+  padding: 15px;
+}
+
+.online-friends-container {
+  margin-top: 1rem;
+  background: #f8f9fa; /* Background for online friends box */
+  border: 1px solid #dee2e6; /* Border for online friends box */
+  border-radius: 8px; /* Rounded corners for online friends box */
+  padding: 15px;
+}
+
+.search-results {
+  margin-top: 10px;
+}
+
+.result-item {
+  padding: 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+
+.result-item:hover {
+  background-color: #e9ecef;
+}
+
+.send-request-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}

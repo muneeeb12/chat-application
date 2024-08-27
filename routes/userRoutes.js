@@ -5,16 +5,14 @@ const usersController = require('../controllers/userController');
 // Search users
 router.get('/search', usersController.searchUsers);
 
-// Send a friend request
-router.post('/friends/request', usersController.sendFriendRequest);
+// Send friend request
+router.post('/sendrequest', usersController.sendFriendRequest);
 
-// Accept a friend request
-router.post('/friends/accept', usersController.acceptFriendRequest);
+// Get outgoing friend requests
+router.get('/outgoingrequests', usersController.getOutgoingRequests);
 
-// Reject a friend request
-router.post('/friends/reject', usersController.rejectFriendRequest);
+// Get incoming friend requests
+router.get('/incomingrequests', usersController.getIncomingRequests);
 
-// Get friend requests
-router.get('/friends/requests', usersController.getFriendRequests);
 
 module.exports = router;
