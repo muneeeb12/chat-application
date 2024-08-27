@@ -1,7 +1,7 @@
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const User = require('../models/User');
+const User = require('../models/UserModel');
 const bcrypt = require('bcrypt');
 require('dotenv').config(); // Load .env variables
 

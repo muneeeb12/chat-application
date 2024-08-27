@@ -14,5 +14,13 @@ router.get('/outgoingrequests', usersController.getOutgoingRequests);
 // Get incoming friend requests
 router.get('/incomingrequests', usersController.getIncomingRequests);
 
+// Route to accept a friend request
+router.post('/acceptrequest', usersController.acceptFriendRequest);
+
+// Route to reject a friend request
+router.post('/rejectrequest', usersController.rejectFriendRequest);
+
+// Route to get the friend list
+router.get('/friends', usersController.getFriendsList);
 
 module.exports = router;

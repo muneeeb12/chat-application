@@ -2,7 +2,7 @@ const path = require('path');
 const passport = require('passport');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
-const User = require('../models/User');
+const User = require('../models/UserModel');
 
 // Show login page
 exports.showLoginPage = (req, res) => {
