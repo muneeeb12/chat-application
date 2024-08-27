@@ -10,7 +10,6 @@ exports.showHomePage = (req, res) => {
 
 // Show dashboard page
 exports.showDashboardPage = (req, res) => {
-    // Assuming you're using Passport.js and the user is authenticated
     const user = req.user; // This should contain the user object from the session
     
     if (!user) {
@@ -18,4 +17,8 @@ exports.showDashboardPage = (req, res) => {
     }
     
     res.render('dashboard', { user }); // Render dashboard.ejs with user data
+};
+
+exports.test = (req, res) => {
+  res.render('test');
 };
