@@ -18,3 +18,7 @@ exports.showDashboardPage = (req, res) => {
     
     res.render('dashboard', { user }); // Render dashboard.ejs with user data
 };
+
+exports.test = (req, res) => {
+  res.render('test');
+};
