@@ -1,3 +1,4 @@
+const http = require('http');
 const express = require('express');
 const { Server } = require('socket.io');
 const path = require('path');
@@ -7,6 +8,8 @@ require('dotenv').config();
 
 const connectDb = require('./config/dbConnection');
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
@@ -35,10 +38,22 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', require('./routes/homeRoutes'));
 app.use('/auth', require('./routes/authRoutes'));
 app.use('/users', require('./routes/userRoutes'));
+app.use('/chat', require('./routes/chatRoutes'));
 
 
 connectDb(); // Connect to the database
 
-const server = app.listen(process.env.PORT || 3000, () => {
+// Handle socket connection
+io.on('connection', (socket) => {
+    console.log('A user connected', socket.id);
+  
+    // Listen for chat messages
+    socket.on('chatMessage', (msg) => {
+      io.emit('message', msg); // Broadcast message to all clients
+    });
+  
+  });
+server.listen(process.env.PORT || 3000, () => {
     console.log(`Server is running on port ${process.env.PORT || 3000}`);
 });
+

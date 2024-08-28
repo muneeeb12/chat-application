@@ -5,7 +5,11 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 // Route to show home page
 router.get('/', homeController.showHomePage);
-router.get('/dashboard', homeController.showDashboardPage);
-router.get('/test',authMiddleware ,homeController.test);
+
+// Route to show dashboard page
+router.get('/dashboard', authMiddleware, homeController.showDashboardPage);
+
+// Test route for auth middleware
+router.get('/test', authMiddleware, homeController.test);
 
 module.exports = router;

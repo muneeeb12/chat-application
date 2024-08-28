@@ -1,24 +1,20 @@
-const path = require('path');
+const User = require("../models/UserModel");
 
 // Show home page
 exports.showHomePage = (req, res) => {
   const user = req.user;
-
-  res.render('home', { user }); // Render home.ejs with user data
+  res.render('home', { user });
 };
-
 
 // Show dashboard page
 exports.showDashboardPage = (req, res) => {
-    const user = req.user; // This should contain the user object from the session
-    
-    if (!user) {
-        return res.redirect('/auth/login'); // Redirect to login if the user is not authenticated
-    }
-    
-    res.render('dashboard', { user }); // Render dashboard.ejs with user data
+  const user = req.user;
+  if (!user) {
+    return res.redirect('/auth/login');
+  }
+  res.render('dashboard', { user });
 };
-
+// Test route
 exports.test = (req, res) => {
   res.render('test');
 };

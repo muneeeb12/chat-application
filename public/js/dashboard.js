@@ -37,26 +37,51 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Load Friends List
-  async function loadFriendsList() {
-    try {
-      const response = await fetch('/users/friends');
-      console.log(response);
-      const friends = await response.json();
-      friendsList.innerHTML = '';
-      if (friends.length > 0) {
-        friends.forEach(friend => {
-          const friendItem = document.createElement('li');
-          friendItem.classList.add('list-group-item');
-          friendItem.textContent = friend.username;
-          friendsList.appendChild(friendItem);
+ // Load Friends List
+async function loadFriendsList() {
+  try {
+    const response = await fetch('/users/friends');
+    const friends = await response.json();
+    friendsList.innerHTML = '';
+    if (friends.length > 0) {
+      friends.forEach(friend => {
+        const friendItem = document.createElement('li');
+        friendItem.classList.add('list-group-item');
+        
+        // Create link element
+        const friendLink = document.createElement('a');
+        friendLink.href = `/chat/page/${friend._id}`;
+        friendLink.textContent = friend.username;
+        
+        // Apply link styles
+        friendLink.style.color = '#007bff';
+        friendLink.style.textDecoration = 'none';
+        friendLink.style.display = 'block'; // Ensure the link takes up the full width of the list item
+        friendLink.style.padding = '10px';
+        
+        // Add hover effect on the list item
+        friendItem.style.position = 'relative';
+        friendItem.style.cursor = 'pointer';
+        friendItem.addEventListener('mouseover', function () {
+          friendItem.style.backgroundColor = '#f0f0f0'; // Background color on hover
         });
-      } else {
-        friendsList.innerHTML = '<li class="list-group-item">No friends yet.</li>';
-      }
-    } catch (error) {
-      console.error('Error loading friends list:', error);
+        friendItem.addEventListener('mouseout', function () {
+          friendItem.style.backgroundColor = ''; // Reset background color
+        });
+        
+        // Append link to list item
+        friendItem.appendChild(friendLink);
+        friendsList.appendChild(friendItem);
+      });
+    } else {
+      friendsList.innerHTML = '<li class="list-group-item">No friends yet.</li>';
     }
+  } catch (error) {
+    console.error('Error loading friends list:', error);
   }
+}
+
+
 
   // Perform User Search
   async function performSearch() {
