@@ -177,14 +177,22 @@ exports.getFriendsList = async (req, res) => {
     // Find friendships where the user is either user1 or user2
     const friendships = await Friendship.find({
       $or: [{ user1: userId }, { user2: userId }]
-    }).populate('user1 user2', 'username _id');
+    }).populate('user1 user2', 'username _id status');
 
-    // Map friendships to extract the friend's information
+    // Map friendships to extract the friend's information along with status
     const friends = friendships.map(friendship => {
       if (friendship.user1._id.equals(userId)) {
-        return friendship.user2;
+        return {
+          _id: friendship.user2._id,
+          username: friendship.user2.username,
+          status: friendship.user2.status
+        };
       } else {
-        return friendship.user1;
+        return {
+          _id: friendship.user1._id,
+          username: friendship.user1.username,
+          status: friendship.user1.status
+        };
       }
     });
 

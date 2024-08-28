@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const searchResults = document.querySelector('#searchResults');
   const incomingRequestsList = document.querySelector('#incomingRequests');
   const friendsList = document.querySelector('#friendsList');
+  //const loggedInUserId = '<%= user._id %>'; // Ensure this is rendered correctly from EJS
 
   // Load Incoming Friend Requests
   async function loadIncomingRequests() {
@@ -37,51 +38,62 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Load Friends List
- // Load Friends List
-async function loadFriendsList() {
-  try {
-    const response = await fetch('/users/friends');
-    const friends = await response.json();
-    friendsList.innerHTML = '';
-    if (friends.length > 0) {
-      friends.forEach(friend => {
-        const friendItem = document.createElement('li');
-        friendItem.classList.add('list-group-item');
-        
-        // Create link element
-        const friendLink = document.createElement('a');
-        friendLink.href = `/chat/page/${friend._id}`;
-        friendLink.textContent = friend.username;
-        
-        // Apply link styles
-        friendLink.style.color = '#007bff';
-        friendLink.style.textDecoration = 'none';
-        friendLink.style.display = 'block'; // Ensure the link takes up the full width of the list item
-        friendLink.style.padding = '10px';
-        
-        // Add hover effect on the list item
-        friendItem.style.position = 'relative';
-        friendItem.style.cursor = 'pointer';
-        friendItem.addEventListener('mouseover', function () {
-          friendItem.style.backgroundColor = '#f0f0f0'; // Background color on hover
+  async function loadFriendsList() {
+    friendsList.innerHTML = '<li class="list-group-item">Loading friends...</li>';
+    
+    try {
+      const response = await fetch('/users/friends');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const friends = await response.json();
+      friendsList.innerHTML = '';
+
+      if (friends.length > 0) {
+        const fragment = document.createDocumentFragment();
+
+        friends.forEach(friend => {
+          const friendItem = document.createElement('li');
+          friendItem.classList.add('list-group-item');
+
+          // Create link element
+          const friendLink = document.createElement('a');
+          friendLink.href = `/chat/page/${loggedInUserId}`; // Use logged-in user ID for the link
+          friendLink.textContent = friend.username;
+
+          // Apply link styles
+          Object.assign(friendLink.style, {
+            color: '#007bff',
+            textDecoration: 'none',
+            display: 'block',
+            padding: '10px'
+          });
+
+          // Add hover effect on the list item
+          friendItem.style.position = 'relative';
+          friendItem.style.cursor = 'pointer';
+          friendItem.addEventListener('mouseover', () => {
+            friendItem.style.backgroundColor = '#f0f0f0';
+          });
+          friendItem.addEventListener('mouseout', () => {
+            friendItem.style.backgroundColor = '';
+          });
+
+          // Append link to list item and to the fragment
+          friendItem.appendChild(friendLink);
+          fragment.appendChild(friendItem);
         });
-        friendItem.addEventListener('mouseout', function () {
-          friendItem.style.backgroundColor = ''; // Reset background color
-        });
-        
-        // Append link to list item
-        friendItem.appendChild(friendLink);
-        friendsList.appendChild(friendItem);
-      });
-    } else {
-      friendsList.innerHTML = '<li class="list-group-item">No friends yet.</li>';
+
+        friendsList.appendChild(fragment);
+      } else {
+        friendsList.innerHTML = '<li class="list-group-item">No friends yet.</li>';
+      }
+    } catch (error) {
+      console.error('Error loading friends list:', error);
+      friendsList.innerHTML = '<li class="list-group-item">Error loading friends list.</li>';
     }
-  } catch (error) {
-    console.error('Error loading friends list:', error);
   }
-}
-
-
 
   // Perform User Search
   async function performSearch() {
@@ -122,16 +134,14 @@ async function loadFriendsList() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ requestId })
       });
-      console.log(response);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      listItem.remove(); // Remove the item from the list
+      listItem.remove();
 
       if (action === 'accept') {
-        // Reload the friends list to reflect the new friend
         loadFriendsList();
       }
     } catch (error) {

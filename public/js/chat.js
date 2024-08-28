@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // Create and append CSS styles
+    // Create and append CSS styles (existing styles)
     const style = document.createElement('style');
     style.textContent = `
         /* Style for the online friends list */
@@ -130,9 +130,6 @@ document.addEventListener('DOMContentLoaded', function () {
         emojiPicker.style.display = 'none';
     });
 
-    // Check if friendsList is null
-    console.log('friendsList:', friendsList); // Debugging line
-
     // Listen for incoming messages
     socket.on('message', (message) => {
         displayMessage(message);
@@ -163,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Load Friends List
     async function loadFriendsList() {
         try {
-            const response = await fetch('/users/friends');
+            const response = await fetch('/users/friends'); // Fetch friends list from server
             const friends = await response.json();
             friendsList.innerHTML = '';
             if (friends.length > 0) {
@@ -173,15 +170,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     // Create link element
                     const friendLink = document.createElement('a');
-                    friendLink.href = `/chat/page/${friend._id}`;
+                    friendLink.href = '#'; // Prevent default link behavior
                     friendLink.textContent = friend.username;
 
                     // Create online status indicator
                     const statusIndicator = document.createElement('span');
-                    statusIndicator.className = friend.status === 'online' ? 'status-dot online' : 'status-dot offline';
+                    statusIndicator.className = friend.status === 'Online' ? 'status-dot online' : 'status-dot offline';
 
                     // Append status indicator to the link
                     friendLink.appendChild(statusIndicator);
+
+                    // Append click event to update chat header
+                    friendLink.addEventListener('click', () => {
+                        updateChatHeader(friend.username); // Update chat header with friend's name
+                    });
 
                     // Append link to list item
                     friendItem.appendChild(friendLink);
@@ -193,6 +195,12 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (error) {
             console.error('Error loading friends list:', error);
         }
+    }
+
+    // Function to update the chat header
+    function updateChatHeader(friendName) {
+        const chatHeader = document.querySelector('#chatHeader'); // Assuming you have a header element
+        chatHeader.textContent = `${friendName}`; // Update header text
     }
 
     // Initial Load
