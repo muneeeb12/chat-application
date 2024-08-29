@@ -5,76 +5,33 @@ document.addEventListener('DOMContentLoaded', function () {
     const messageForm = document.querySelector('#messageForm');
     const messageInput = document.querySelector('#messageInput');
     const friendsList = document.querySelector('#onlineFriendsList'); // Reference to the friends list
-    const emojiButton = document.createElement('span'); // Emoji button
-    const emojiPicker = document.createElement('div'); // Emoji picker
-
-    // Create emoji button
-    emojiButton.innerHTML = '😀'; // Emoji icon
-    emojiButton.className = 'emoji-button';
-    messageForm.appendChild(emojiButton);
-
-    // Create emoji picker
-    const emojis = ['😀', '😂', '😍', '😢', '😡', '👍', '👎', '🎉', '❤️', '🙌'];
-    emojiPicker.className = 'emoji-picker';
-    emojis.forEach(emoji => {
-        const emojiElement = document.createElement('span');
-        emojiElement.className = 'emoji';
-        emojiElement.textContent = emoji;
-        emojiElement.addEventListener('click', () => {
-            messageInput.value += emoji; // Add emoji to input
-            emojiPicker.style.display = 'none'; // Hide the picker after selection
-        });
-        emojiPicker.appendChild(emojiElement);
-    });
-    document.body.appendChild(emojiPicker); // Append emoji picker to the body
-
-    // Show/hide emoji picker on button click
-    emojiButton.addEventListener('click', (event) => {
-        event.stopPropagation(); // Prevent event from bubbling up
-        emojiPicker.style.display = emojiPicker.style.display === 'block' ? 'none' : 'block';
-
-        // Position the emoji picker above the button
-        const rect = emojiButton.getBoundingClientRect();
-        emojiPicker.style.left = `${rect.left}px`;
-        emojiPicker.style.top = `${rect.top - emojiPicker.offsetHeight}px`; // Position above the button
-    });
-
-    // Hide emoji picker when clicking outside
-    document.addEventListener('click', () => {
-        emojiPicker.style.display = 'none';
-    });
 
     // Listen for incoming messages
-    socket.on('message', (message) => {
-        displayMessage(message);
-    });
+    socket.on('message', displayMessage);
 
     // Handle form submission to send a message
     messageForm.addEventListener('submit', (event) => {
-        event.preventDefault(); // Prevent form submission
-
+        event.preventDefault();
         const message = messageInput.value.trim();
-        if (message.length > 0) {
-            socket.emit('chatMessage', { text: message }); // Send message to server
-            messageInput.value = ''; // Clear input
-            messageInput.focus(); // Focus back on input
+        if (message) {
+            socket.emit('chatMessage', { text: message });
+            messageInput.value = '';
+            messageInput.focus();
         }
     });
 
-    // Function to display a message in the chat
     function displayMessage(message) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('chat-message');
         messageElement.innerHTML = `<strong>${message.user || 'Unknown'}</strong>: ${message.text}`;
-
         chatMessages.appendChild(messageElement);
-        chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
     // Load Friends List
     async function loadFriendsList() {
         try {
-            const response = await fetch('/users/friends'); // Fetch friends list from server
+            const response = await fetch('/users/friends');
             const friends = await response.json();
             friendsList.innerHTML = '';
             if (friends.length > 0) {
@@ -82,24 +39,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     const friendItem = document.createElement('li');
                     friendItem.classList.add('list-group-item');
 
-                    // Create link element
                     const friendLink = document.createElement('a');
-                    friendLink.href = '#'; // Prevent default link behavior
+                    friendLink.href = '#';
                     friendLink.textContent = friend.username;
 
-                    // Create online status indicator
                     const statusIndicator = document.createElement('span');
                     statusIndicator.className = friend.status === 'Online' ? 'status-dot online' : 'status-dot offline';
 
-                    // Append status indicator to the link
                     friendLink.appendChild(statusIndicator);
-
-                    // Append click event to update chat header
-                    friendLink.addEventListener('click', () => {
-                        updateChatHeader(friend.username); // Update chat header with friend's name
-                    });
-
-                    // Append link to list item
+                    friendLink.addEventListener('click', () => updateChatHeader(friend.username));
                     friendItem.appendChild(friendLink);
                     friendsList.appendChild(friendItem);
                 });
@@ -111,12 +59,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Function to update the chat header
     function updateChatHeader(friendName) {
-        const chatHeader = document.querySelector('#chatHeader'); // Assuming you have a header element
-        chatHeader.textContent = `${friendName}`; // Update header text
+        document.querySelector('#chatHeader').textContent = friendName;
     }
 
-    // Initial Load
-    loadFriendsList(); // Load friends list when the chat is initialized
+    loadFriendsList(); // Initial Load
 });

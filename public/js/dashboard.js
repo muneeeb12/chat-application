@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Load Friends List
   async function loadFriendsList() {
     friendsList.innerHTML = '<li class="list-group-item">Loading friends...</li>';
-    
+
     try {
       const response = await fetch('/users/friends');
       if (!response.ok) {
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
           // Create link element
           const friendLink = document.createElement('a');
-          friendLink.href = `/chat/page/${loggedInUserId}`; // Use logged-in user ID for the link
+          friendLink.href = `/chat/${loggedInUserId}`; // Use logged-in user ID for the link
           friendLink.textContent = friend.username;
 
           // Apply link styles

@@ -1,23 +1,35 @@
 <header class="bg-primary text-white py-2 mb-2">
-    <div class="container">
-      <nav class="navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="/">
-          <i class="fas fa-comments"></i> Chat App
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ml-auto">
+  <div class="container">
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <a class="navbar-brand" href="/">
+        <i class="fas fa-comments"></i> Chat App
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+          <% if (typeof user !=='undefined' && user && user.username) { %>
             <li class="nav-item">
-              <a class="nav-link" href="/auth/login">Login</a>
+              <span class="nav-link">Hello, <%= user.username %></span>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/auth/register">Register</a>
+              <a class="nav-link" href="/dashboard">Dashboard</a>
             </li>
-          </ul>
-        </div>
-      </nav>
-    </div>
-  </header>
-  
+            <li class="nav-item">
+              <a class="nav-link" href="/auth/logout">Logout</a>
+            </li>
+            <% } else { %>
+              <li class="nav-item">
+                <a class="nav-link" href="/auth/login">Login</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/auth/register">Register</a>
+              </li>
+              <% } %>
+        </ul>
+      </div>
+    </nav>
+  </div>
+</header>

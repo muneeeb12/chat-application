@@ -1,54 +1,41 @@
-/* Style for the online friends list */
+/* General styles for header and body */
 body {
+    font-family: Arial, sans-serif;
+    /* Add a font family */
     background-color: #f8f9fa;
 }
-/* Custom styles for header and body */
+
 header {
-    background-color: #007bff; /* Bootstrap primary color */
-  }
-  
-  /* Center the main content */
-  main {
-    text-align: center;
-    margin-top: 20px;
-  }
-  
-  /* Style the form */
-  form {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .navbar-brand {
-    font-size: 1.5rem; /* Smaller size for the Chat App text */
-    display: flex;
-    align-items: center;
-  }
-  
-  .navbar-brand .fa-comments {
-    font-size: 1.8rem; /* Adjust the size of the icon */
-    margin-right: 10px;
-  }
-  
-  .navbar-nav {
-    margin-left: auto; /* Align the nav items to the right */
-  }
-  
-#chatContainer {
-    display: flex;
-    height: 70vh; /* Reduced height */
+    background-color: #007bff;
+    /* Bootstrap primary color */
+    color: white;
+    padding: 10px 0;
+    /* Adjust padding as needed */
+    border-bottom: 1px solid #dee2e6;
+    /* Add a border bottom */
 }
 
+/* Online Friends section */
 #onlineFriends {
-    width: 25%;
     background-color: #343a40;
     color: white;
-    padding: 10px; /* Reduced padding */
+    padding: 20px;
+    /* Increase padding for better layout */
     overflow-y: auto;
+    border-right: 1px solid #dee2e6;
+    /* Add a border right */
+    width: 30%;
+    /* Set width to 30% of the page */
+    float: left;
+    /* Make it float left */
 }
 
+#onlineFriendsDropdown {
+    display: none;
+    /* Hide the dropdown by default */
+}
+
+/* Search Box */
 #searchBox {
     background-color: #495057;
     border: none;
@@ -56,147 +43,218 @@ header {
     padding: 10px 15px;
     color: white;
     margin-bottom: 15px;
+    width: 80%;
+    /* Set width to 80% of the parent container */
 }
 
+/* Chat Messages section */
 #chatMessages {
-    width: 50%;
     background-color: white;
-    padding: 10px; /* Reduced padding */
+    padding: 20px;
+    /* Increase padding for better layout */
     border-left: 1px solid #dee2e6;
     overflow-y: auto;
-    position: relative; /* Allow positioning of input inside */
+    width: 70%;
+    /* Set width to 70% of the page */
+    float: left;
+    /* Make it float left */
 }
 
-#usernameDisplay {
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #495057;
-}
-
-#chatHeader {
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #495057;
-}
-
+/* Message input container */
 #messageInputContainer {
     display: flex;
     align-items: center;
     padding: 10px;
-    background-color: #f1f1f1; /* Input bar background */
+    background-color: #f1f1f1;
     border-top: 1px solid #dee2e6;
-    position: absolute; /* Position it at the bottom */
-    bottom: 0;
-    left: 0;
-    right: 0;
+    width: 100%;
+    /* Set width to 100% of the parent container */
 }
 
-#messageInput {
-    flex: 1;
-    border: none;
-    border-radius: 25px;
-    padding: 10px 15px;
-    margin-right: 10px; /* This can be removed if using ml-2 on the button */
+/* Adjust layout for mobile */
+@media (max-width: 767.98px) {
+    #chatContainer {
+        display: block;
+    }
+
+    #onlineFriends {
+        display: none;
+    }
+
+    #onlineFriendsDropdown {
+        display: block;
+    }
+
+    #chatMessages {
+        width: 100%;
+        /* Set width to 100% of the page on mobile */
+    }
 }
 
-.btn-primary {
-    border-radius: 50%; /* Make the button circular */
-    width: 40px; /* Set a fixed width */
-    height: 40px; /* Set a fixed height */
+/* Center the main content */
+main {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Style the form */
+form {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    /* Smaller size for the Chat App text */
     display: flex;
-    justify-content: center;
     align-items: center;
 }
 
-.message {
+.navbar-nav {
+    margin-left: auto;
+    /* Align the nav items to the right */
+}
+
+.search-container {
+    margin-bottom: 1.5rem;
+}
+
+.search-input {
+    max-width: 300px;
+    /* Adjust width as needed */
+}
+
+.requests-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.requests-box {
+    flex: 1;
+    margin: 0 0.5rem;
+    background: #f8f9fa;
+    /* Background for request boxes */
+    border: 1px solid #dee2e6;
+    /* Border for request boxes */
+    border-radius: 8px;
+    /* Rounded corners for request boxes */
+    padding: 15px;
+}
+
+.online-friends-container {
+    margin-top: 1rem;
+    background: #f8f9fa;
+    /* Background for online friends box */
+    border: 1px solid #dee2e6;
+    /* Border for online friends box */
+    border-radius: 8px;
+    /* Rounded corners for online friends box */
+    padding: 15px;
+}
+
+.search-results {
+    margin-top: 10px;
+}
+
+.result-item {
+    padding: 10px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+
+.result-item:hover {
+    background-color: #e9ecef;
+}
+
+.send-request-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    background-color: #007bff;
+    /* Bootstrap primary color */
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.send-request-button:hover {
+    background-color: #0069d9;
+    /* Darker shade of Bootstrap primary color */
+}
+
+/* Style the chat messages */
+.chat-message {
+    padding: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.chat-message .username {
+    font-weight: bold;
+}
+
+.chat-message .message {
     margin-bottom: 10px;
 }
 
-.message.sent {
-    text-align: right;
-}
-
-.message.received {
-    text-align: left;
-}
-
-
-#onlineFriendsList {
-    list-style-type: none;
-    padding: 0;
-    background-color: #333; /* Dark gray for the container */
-    border-radius: 5px; /* Rounded corners */
-    padding: 10px; /* Padding around the list */
-}
-
-.list-group-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: #444; /* Dark gray for each friend box */
-    border-radius: 5px; /* Rounded corners */
-    margin: 5px 0; /* Space between items */
-    transition: background-color 0.3s; /* Smooth transition for hover effect */
-}
-
-/* Status dot styles */
-.status-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    margin-left: 20px; /* Space between name and dot */
-}
-
-.online {
-    background-color: green; /* Green for online */
-}
-
-.offline {
-    background-color: gray; /* Gray for offline */
-}
-
-/* Hover effect for friend boxes */
-.list-group-item:hover {
-    background-color: black; /* Change to black on hover */
-}
-
-/* Link styles */
-a {
-    color: #007bff; /* Default link color */
-    text-decoration: none; /* Remove underline */
-    display: flex; /* Use flex for alignment */
-    align-items: center; /* Center items vertically */
-    padding: 10px; /* Padding inside the link */
-    width: 100%; /* Full width */
-}
-
-a:hover {
-    color: #0056b3; /* Darker color on link hover */
-}
-
-/* Emoji picker styles */
-.emoji-button {
-    cursor: pointer;
-    margin-left: 10px;
-    font-size: 20px;
-}
-
-.emoji-picker {
-    display: none;
-    position: absolute;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+/* Style the message input field */
+#messageInput {
     padding: 10px;
-    z-index: 1000;
-    max-width: 300px;
-    overflow: auto;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    margin-top: -5px; /* Adjust positioning */
+    border: none;
+    border-radius: 25px;
+    width: 80%;
+    /* Set width to 80% of the parent container */
 }
 
-.emoji {
+#messageInput:focus {
+    outline: none;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Style the send button */
+#sendButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    background-color: #007bff;
+    /* Bootstrap primary color */
+    color: white;
+    border: none;
     cursor: pointer;
-    font-size: 24px;
-    margin: 5px;
+}
+
+#sendButton:hover {
+    background-color: #0069d9;
+    /* Darker shade of Bootstrap primary color */
+}
+
+/* Make the chat container responsive */
+#chatContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: stretch;
+    height: 100vh;
+    /* Set height to 100% of the viewport */
+}
+
+/* Make the online friends list responsive */
+#onlineFriendsList {
+    overflow-y: auto;
+    height: 100%;
+    /* Set height to 100% of the parent container */
+}
+
+/* Make the chat messages container responsive */
+#chatMessagesContainer {
+    overflow-y: auto;
+    height: 100%;
+    /* Set height to 100% of the parent container */
 }
