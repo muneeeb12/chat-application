@@ -1,6 +1,7 @@
 /* Custom styles for header and body */
 header {
-  background-color: #007bff; /* Bootstrap primary color */
+  background-color: #007bff;
+  /* Bootstrap primary color */
 }
 
 /* Center the main content */
@@ -18,18 +19,21 @@ form {
 }
 
 .navbar-brand {
-  font-size: 1.5rem; /* Smaller size for the Chat App text */
+  font-size: 1.5rem;
+  /* Smaller size for the Chat App text */
   display: flex;
   align-items: center;
 }
 
 .navbar-brand .fa-comments {
-  font-size: 1.8rem; /* Adjust the size of the icon */
+  font-size: 1.8rem;
+  /* Adjust the size of the icon */
   margin-right: 10px;
 }
 
 .navbar-nav {
-  margin-left: auto; /* Align the nav items to the right */
+  margin-left: auto;
+  /* Align the nav items to the right */
 }
 
 .search-container {
@@ -37,7 +41,8 @@ form {
 }
 
 .search-input {
-  max-width: 300px; /* Adjust width as needed */
+  max-width: 300px;
+  /* Adjust width as needed */
 }
 
 .requests-container {
@@ -49,17 +54,23 @@ form {
 .requests-box {
   flex: 1;
   margin: 0 0.5rem;
-  background: #f8f9fa; /* Background for request boxes */
-  border: 1px solid #dee2e6; /* Border for request boxes */
-  border-radius: 8px; /* Rounded corners for request boxes */
+  background: #f8f9fa;
+  /* Background for request boxes */
+  border: 1px solid #dee2e6;
+  /* Border for request boxes */
+  border-radius: 8px;
+  /* Rounded corners for request boxes */
   padding: 15px;
 }
 
 .online-friends-container {
   margin-top: 1rem;
-  background: #f8f9fa; /* Background for online friends box */
-  border: 1px solid #dee2e6; /* Border for online friends box */
-  border-radius: 8px; /* Rounded corners for online friends box */
+  background: #f8f9fa;
+  /* Background for online friends box */
+  border: 1px solid #dee2e6;
+  /* Border for online friends box */
+  border-radius: 8px;
+  /* Rounded corners for online friends box */
   padding: 15px;
 }
 

@@ -14,7 +14,7 @@
             <li class="nav-item">
               <span class="nav-link">Hello, <%= user.username %></span>
             </li>
-            <li class="nav-item">
+            <li class="nav-item" id="dashboardLink">
               <a class="nav-link" href="/dashboard">Dashboard</a>
             </li>
             <li class="nav-item">
@@ -33,3 +33,13 @@
     </nav>
   </div>
 </header>
+
+<script>
+  // Use JavaScript to hide the Dashboard link if on the dashboard page
+  document.addEventListener('DOMContentLoaded', function () {
+    const currentPath = window.location.pathname;
+    if (currentPath === '/dashboard') {
+      document.getElementById('dashboardLink').style.display = 'none';
+    }
+  });
+</script>
