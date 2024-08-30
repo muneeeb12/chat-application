@@ -17,17 +17,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Listen for online status updates
-    socket.on('statusUpdate', (userStatus) => {
-        updateFriendStatus(userStatus);
-    });
-
     // Handle form submission to send a message
     messageForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-
         const message = messageInput.value.trim();
-        if (message.length > 0 && currentRecipientId) {
+        if (message && currentRecipientId) {
             const messageData = {
                 recipient: currentRecipientId,
                 content: message,
@@ -59,69 +53,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Function to display a message in the chat UI
-    function displayMessage(message) {
-        const messageElement = document.createElement('div');
-        messageElement.className = 'message';
-        messageElement.innerHTML = `<strong>${message.sender === loggedInUserId ? 'You' : message.senderName}</strong>: ${message.content}`;
-        chatMessages.appendChild(messageElement);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    // Function to update a friend's status
-    function updateFriendStatus(userStatus) {
-        const friendItems = friendsList.querySelectorAll('.list-group-item');
-        friendItems.forEach(item => {
-            if (item.dataset.userId === userStatus._id) {
-                const statusDot = item.querySelector('.status-dot');
-                if (statusDot) {
-                    statusDot.className = `status-dot ${userStatus.status.toLowerCase()}`;
-                }
-            }
-        });
-    }
-
-    // Function to load chat messages
-    async function loadMessages() {
-        if (currentRecipientId) {
-            chatMessages.innerHTML = ''; // Clear the chat box before loading new messages
-            try {
-                const response = await fetch(`/chat/${currentRecipientId}`);
-                const messages = await response.json();
-                messages.forEach(message => {
-                    displayMessage({
-                        sender: message.sender._id,
-                        senderName: message.sender._id === loggedInUserId ? 'You' : message.sender.username,
-                        content: message.content,
-                        recipient: message.recipient._id
-                    });
-                });
-            } catch (error) {
-                console.error('Error loading messages:', error);
-            }
-        }
-    }
-
-    friendsList.addEventListener('click', (event) => {
-        if (event.target.tagName === 'LI') {
-            currentRecipientId = event.target.dataset.userId;
-            
-            // Ensure chatHeader exists
-            const chatHeader = document.querySelector('#chatHeader');
-            if (chatHeader) {
-                chatHeader.textContent = event.target.textContent;
-            } else {
-                console.error('Chat header not found');
-            }
-    
-            loadMessages(); // Load messages when a conversation is selected
-        }
-    });
-
     // Initialize friends list
     async function initFriendsList() {
         try {
-            const response = await fetch('/users/friends'); // Adjust endpoint as needed
+            const response = await fetch('/users/friends');
             const friends = await response.json();
             friends.forEach(friend => {
                 const friendItem = document.createElement('li');
@@ -136,4 +71,50 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     initFriendsList();
+
+    // Function to display a message in the chat UI
+    function displayMessage(message) {
+        const messageElement = document.createElement('div');
+        messageElement.className = 'message';
+        messageElement.innerHTML = `<strong>${message.sender === loggedInUserId ? 'You' : message.senderName}</strong>: ${message.content}`;
+        chatMessages.appendChild(messageElement);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    friendsList.addEventListener('click', (event) => {
+        if (event.target.tagName === 'LI') {
+            currentRecipientId = event.target.dataset.userId;
+
+            // Show the message input form when a friend is selected
+            messageForm.style.display = 'flex'; // Show the input form
+
+            loadMessages(); // Load messages when a conversation is selected
+        }
+    });
+
+    // Function to load chat messages
+    async function loadMessages() {
+        if (currentRecipientId) {
+            chatMessages.innerHTML = ''; // Clear the chat box before loading new messages
+            try {
+                const response = await fetch(`/chat/history/${currentRecipientId}`);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error: ${response.status} - ${errorText}`);
+                }
+
+                const messages = await response.json();
+                messages.forEach(message => {
+                    displayMessage({
+                        sender: message.sender._id,
+                        senderName: message.sender._id === loggedInUserId ? 'You' : message.sender.username,
+                        content: message.content,
+                        recipient: message.recipient._id
+                    });
+                });
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        }
+    }
 });

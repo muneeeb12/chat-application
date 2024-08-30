@@ -10,6 +10,6 @@ router.get('/:userId', authMiddleware, chatController.showChatPage);
 router.post('/send', chatController.sendMessage);
 
 // Route to get messages
-router.get('/:recipientId', chatController.getMessages);
+router.get('/history/:currentRecipientId', chatController.getMessages);
 
 module.exports = router;

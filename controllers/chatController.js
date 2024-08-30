@@ -4,6 +4,7 @@ const DirectMessage = require("../models/DirectMessageModel");
 exports.showChatPage = async (req, res) => {
   try {
     const userId = req.params.userId; 
+    console.log("loginuserId: ",userId)
     if (!userId) {
       return res.status(400).send('User ID is required');
     }
@@ -28,6 +29,7 @@ exports.sendMessage = async (req, res) => {
 
       // Create a new message
       const newMessage = new Message({ recipient, content, sender });
+      console.log(recipient,sender,content);
       await newMessage.save();
 
       res.status(201).json(newMessage);
@@ -37,22 +39,30 @@ exports.sendMessage = async (req, res) => {
   }
 };
 
-// Get messages for a conversation
 exports.getMessages = async (req, res) => {
   try {
-      const recipientId = req.params.recipientId;
-      const senderId = req.user._id; // Get the sender ID from the logged-in user
+      const recipientId = req.params.currentRecipientId;
+      const senderId = req.user ? req.user._id : null; // Ensure req.user exists
 
-      const messages = await Message.find({
+      console.log("recipientId:", recipientId);
+      console.log("senderId:", senderId);
+
+      if (!recipientId || !senderId) {
+          return res.status(400).json({ error: 'Missing recipient or sender ID' });
+      }
+
+      const messages = await DirectMessage.find({
           $or: [
               { sender: senderId, recipient: recipientId },
               { sender: recipientId, recipient: senderId }
           ]
       }).populate('sender recipient');
 
+      console.log("Messages found:", messages); // Log the messages found
       res.json(messages);
   } catch (error) {
       console.error('Error fetching messages:', error);
       res.status(500).json({ error: 'Server error' });
   }
 };
+
