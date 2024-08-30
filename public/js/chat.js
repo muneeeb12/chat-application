@@ -1,122 +1,139 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const socket = io(); // Initialize Socket.io
+    const socket = io(); // Initialize Socket.IO
 
     const chatMessages = document.querySelector('#chatMessages');
     const messageForm = document.querySelector('#messageForm');
     const messageInput = document.querySelector('#messageInput');
-    const friendsList = document.querySelector('#onlineFriendsList'); // Reference to the friends list
-    const emojiButton = document.createElement('span'); // Emoji button
-    const emojiPicker = document.createElement('div'); // Emoji picker
+    const friendsList = document.querySelector('#onlineFriendsList');
+    let currentRecipientId = null;
 
-    // Create emoji button
-    emojiButton.innerHTML = '😀'; // Emoji icon
-    emojiButton.className = 'emoji-button';
-    messageForm.appendChild(emojiButton);
-
-    // Create emoji picker
-    const emojis = ['😀', '😂', '😍', '😢', '😡', '👍', '👎', '🎉', '❤️', '🙌'];
-    emojiPicker.className = 'emoji-picker';
-    emojis.forEach(emoji => {
-        const emojiElement = document.createElement('span');
-        emojiElement.className = 'emoji';
-        emojiElement.textContent = emoji;
-        emojiElement.addEventListener('click', () => {
-            messageInput.value += emoji; // Add emoji to input
-            emojiPicker.style.display = 'none'; // Hide the picker after selection
-        });
-        emojiPicker.appendChild(emojiElement);
-    });
-    document.body.appendChild(emojiPicker); // Append emoji picker to the body
-
-    // Show/hide emoji picker on button click
-    emojiButton.addEventListener('click', (event) => {
-        event.stopPropagation(); // Prevent event from bubbling up
-        emojiPicker.style.display = emojiPicker.style.display === 'block' ? 'none' : 'block';
-
-        // Position the emoji picker above the button
-        const rect = emojiButton.getBoundingClientRect();
-        emojiPicker.style.left = `${rect.left}px`;
-        emojiPicker.style.top = `${rect.top - emojiPicker.offsetHeight}px`; // Position above the button
-    });
-
-    // Hide emoji picker when clicking outside
-    document.addEventListener('click', () => {
-        emojiPicker.style.display = 'none';
-    });
+    // Get the logged-in user's ID from the template
+    const loggedInUserId = document.querySelector('script[data-user-id]').dataset.userId;
 
     // Listen for incoming messages
     socket.on('message', (message) => {
-        displayMessage(message);
+        if (message.recipient === currentRecipientId || message.sender === loggedInUserId) {
+            displayMessage(message);
+        }
+    });
+
+    // Listen for online status updates
+    socket.on('statusUpdate', (userStatus) => {
+        updateFriendStatus(userStatus);
     });
 
     // Handle form submission to send a message
-    messageForm.addEventListener('submit', (event) => {
-        event.preventDefault(); // Prevent form submission
+    messageForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
 
         const message = messageInput.value.trim();
-        if (message.length > 0) {
-            socket.emit('chatMessage', { text: message }); // Send message to server
-            messageInput.value = ''; // Clear input
-            messageInput.focus(); // Focus back on input
+        if (message.length > 0 && currentRecipientId) {
+            const messageData = {
+                recipient: currentRecipientId,
+                content: message,
+                sender: loggedInUserId
+            };
+
+            // Display message immediately for the sender
+            displayMessage({ ...messageData, senderName: 'You' });
+
+            try {
+                // Send message via API
+                await fetch('/chat/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(messageData)
+                });
+
+                // Emit message via Socket.IO
+                socket.emit('chatMessage', {
+                    recipient: currentRecipientId,
+                    sender: loggedInUserId,
+                    text: message
+                });
+
+                messageInput.value = '';
+            } catch (error) {
+                console.error('Error sending message:', error);
+            }
         }
     });
 
-    // Function to display a message in the chat
+    // Function to display a message in the chat UI
     function displayMessage(message) {
         const messageElement = document.createElement('div');
-        messageElement.classList.add('chat-message');
-        messageElement.innerHTML = `<strong>${message.user || 'Unknown'}</strong>: ${message.text}`;
-
+        messageElement.className = 'message';
+        messageElement.innerHTML = `<strong>${message.sender === loggedInUserId ? 'You' : message.senderName}</strong>: ${message.content}`;
         chatMessages.appendChild(messageElement);
-        chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    // Load Friends List
-    async function loadFriendsList() {
-        try {
-            const response = await fetch('/users/friends'); // Fetch friends list from server
-            const friends = await response.json();
-            friendsList.innerHTML = '';
-            if (friends.length > 0) {
-                friends.forEach(friend => {
-                    const friendItem = document.createElement('li');
-                    friendItem.classList.add('list-group-item');
-
-                    // Create link element
-                    const friendLink = document.createElement('a');
-                    friendLink.href = '#'; // Prevent default link behavior
-                    friendLink.textContent = friend.username;
-
-                    // Create online status indicator
-                    const statusIndicator = document.createElement('span');
-                    statusIndicator.className = friend.status === 'Online' ? 'status-dot online' : 'status-dot offline';
-
-                    // Append status indicator to the link
-                    friendLink.appendChild(statusIndicator);
-
-                    // Append click event to update chat header
-                    friendLink.addEventListener('click', () => {
-                        updateChatHeader(friend.username); // Update chat header with friend's name
-                    });
-
-                    // Append link to list item
-                    friendItem.appendChild(friendLink);
-                    friendsList.appendChild(friendItem);
-                });
-            } else {
-                friendsList.innerHTML = '<li class="list-group-item">No friends yet.</li>';
+    // Function to update a friend's status
+    function updateFriendStatus(userStatus) {
+        const friendItems = friendsList.querySelectorAll('.list-group-item');
+        friendItems.forEach(item => {
+            if (item.dataset.userId === userStatus._id) {
+                const statusDot = item.querySelector('.status-dot');
+                if (statusDot) {
+                    statusDot.className = `status-dot ${userStatus.status.toLowerCase()}`;
+                }
             }
-        } catch (error) {
-            console.error('Error loading friends list:', error);
+        });
+    }
+
+    // Function to load chat messages
+    async function loadMessages() {
+        if (currentRecipientId) {
+            chatMessages.innerHTML = ''; // Clear the chat box before loading new messages
+            try {
+                const response = await fetch(`/chat/${currentRecipientId}`);
+                const messages = await response.json();
+                messages.forEach(message => {
+                    displayMessage({
+                        sender: message.sender._id,
+                        senderName: message.sender._id === loggedInUserId ? 'You' : message.sender.username,
+                        content: message.content,
+                        recipient: message.recipient._id
+                    });
+                });
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
         }
     }
 
-    // Function to update the chat header
-    function updateChatHeader(friendName) {
-        const chatHeader = document.querySelector('#chatHeader'); // Assuming you have a header element
-        chatHeader.textContent = `${friendName}`; // Update header text
+    friendsList.addEventListener('click', (event) => {
+        if (event.target.tagName === 'LI') {
+            currentRecipientId = event.target.dataset.userId;
+            
+            // Ensure chatHeader exists
+            const chatHeader = document.querySelector('#chatHeader');
+            if (chatHeader) {
+                chatHeader.textContent = event.target.textContent;
+            } else {
+                console.error('Chat header not found');
+            }
+    
+            loadMessages(); // Load messages when a conversation is selected
+        }
+    });
+
+    // Initialize friends list
+    async function initFriendsList() {
+        try {
+            const response = await fetch('/users/friends'); // Adjust endpoint as needed
+            const friends = await response.json();
+            friends.forEach(friend => {
+                const friendItem = document.createElement('li');
+                friendItem.className = 'list-group-item';
+                friendItem.dataset.userId = friend._id;
+                friendItem.innerHTML = `${friend.username} <span class="status-dot ${friend.status.toLowerCase()}"></span>`;
+                friendsList.appendChild(friendItem);
+            });
+        } catch (error) {
+            console.error('Error initializing friends list:', error);
+        }
     }
 
-    // Initial Load
-    loadFriendsList(); // Load friends list when the chat is initialized
+    initFriendsList();
 });

@@ -35,7 +35,13 @@ header {
   .navbar-nav {
     margin-left: auto; /* Align the nav items to the right */
   }
-  
+  .no-messages {
+    color: #888; /* Light gray color */
+    font-style: italic; /* Italic text */
+    text-align: center; /* Center the text */
+    margin: 20px 0; /* Add some margin */
+}
+ 
 #chatContainer {
     display: flex;
     height: 70vh; /* Reduced height */
@@ -139,20 +145,25 @@ header {
     transition: background-color 0.3s; /* Smooth transition for hover effect */
 }
 
-/* Status dot styles */
+/* Status Dot Styles */
 .status-dot {
-    width: 10px;
-    height: 10px;
+    display: inline-block;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    margin-left: 20px; /* Space between name and dot */
+    margin-left: 10px;
 }
 
-.online {
-    background-color: green; /* Green for online */
+.status-dot.online {
+    background-color: green;
 }
 
-.offline {
-    background-color: gray; /* Gray for offline */
+.status-dot.offline {
+    background-color: grey;
+}
+
+.status-dot.busy {
+    background-color: red;
 }
 
 /* Hover effect for friend boxes */

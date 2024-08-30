@@ -40,20 +40,32 @@ app.use('/auth', require('./routes/authRoutes'));
 app.use('/users', require('./routes/userRoutes'));
 app.use('/chat', require('./routes/chatRoutes'));
 
-
 connectDb(); // Connect to the database
 
-// Handle socket connection
 io.on('connection', (socket) => {
-    console.log('A user connected', socket.id);
-  
-    // Listen for chat messages
-    socket.on('chatMessage', (msg) => {
-      io.emit('message', msg); // Broadcast message to all clients
+    console.log('A user connected:', socket.id);
+
+    // Handle status updates
+    socket.on('statusUpdate', (statusData) => {
+        // Emit status update to all connected clients
+        io.emit('statusUpdate', statusData);
     });
-  
-  });
-server.listen(process.env.PORT || 3000, () => {
-    console.log(`Server is running on port ${process.env.PORT || 3000}`);
+
+    // Handle chat messages
+    socket.on('chatMessage', (message) => {
+        // Broadcast message to the recipient
+        io.to(message.recipient).emit('message', message);
+        io.to(message.sender).emit('message', message); // Ensure sender also gets their own message
+    });
+
+    // Handle disconnections
+    socket.on('disconnect', () => {
+        console.log('User disconnected:', socket.id);
+    });
 });
 
+// Start the server
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
