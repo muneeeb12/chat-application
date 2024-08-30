@@ -34,7 +34,7 @@ exports.sendMessage = async (req, res) => {
     }
 
     const newMessage = new DirectMessage({ recipient, content, sender });
-    console.log("Message details:", { recipient, sender, content });
+    console.log("Message details:", newMessage);
 
     await newMessage.save();
     res.status(201).json(newMessage);

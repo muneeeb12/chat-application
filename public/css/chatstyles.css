@@ -50,7 +50,8 @@ form {
 /* Chat Container Styling */
 #chatContainer {
     display: flex;
-    height: 70vh; /* Reduced height */
+    height: 70vh; /* Adjusted height */
+    overflow: hidden; /* Prevent content from overflowing the container */
 }
 
 /* Online Friends List Styling */
@@ -97,6 +98,7 @@ form {
 
 .list-group-item:hover {
     background-color: black;
+    color: white; /* Ensure text remains visible on hover */
 }
 
 /* Search Box Styling */
@@ -111,12 +113,13 @@ form {
 
 /* Chat Messages Styling */
 #chatMessages {
-    width: 50%;
+    flex: 1; /* Ensure it takes up available space */
     background-color: white;
     padding: 10px;
     border-left: 1px solid #dee2e6;
     overflow-y: auto;
-    position: relative;
+    position: relative; /* Make sure this is relative to allow absolute positioning of the input container */
+    height: 100%; /* Ensure it takes up full height of the parent */
 }
 
 #usernameDisplay,
@@ -145,6 +148,7 @@ form {
     border-radius: 25px;
     padding: 10px 15px;
     margin-right: 10px;
+    background-color: #fff; /* Ensure visibility */
 }
 
 /* Send Button Styling */
@@ -183,4 +187,3 @@ a {
 a:hover {
     color: #0056b3;
 }
-
