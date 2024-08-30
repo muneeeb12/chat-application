@@ -1,24 +1,23 @@
-const path = require('path');
 const passport = require('passport');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const User = require('../models/UserModel');
 
-// Show login page
+// Render the login page
 exports.showLoginPage = (req, res) => {
-    res.render('login'); // Render login.ejs
+    res.render('login');
 };
 
-// Show register page
+// Render the registration page
 exports.showRegisterPage = (req, res) => {
-    res.render('register'); // Render register.ejs
+    res.render('register');
 };
 
-// Show set password page
+// Render the set password page
 exports.showSetPasswordPage = async (req, res) => {
     try {
         const userId = req.params.id;
-        // Validate ObjectId
+
         if (!mongoose.Types.ObjectId.isValid(userId)) {
             return res.redirect('/auth/login');
         }
@@ -27,7 +26,8 @@ exports.showSetPasswordPage = async (req, res) => {
         if (!user || !user.isPending) {
             return res.redirect('/auth/login');
         }
-        res.render('set-password', { userId }); // Render set-password.ejs with userId
+
+        res.render('set-password', { userId });
     } catch (error) {
         console.error('Error retrieving user:', error);
         res.status(500).json({ message: 'Server error retrieving user' });
@@ -42,8 +42,9 @@ exports.registerUser = async (req, res) => {
             username: req.body.username,
             email: req.body.email,
             password: hashedPassword,
-            isPending: false // Registration complete
+            isPending: false,
         });
+
         await user.save();
         res.redirect('/auth/login');
     } catch (error) {
@@ -52,23 +53,19 @@ exports.registerUser = async (req, res) => {
     }
 };
 
-// Handle login
+// Handle user login
 exports.loginUser = (req, res, next) => {
     passport.authenticate('local', async (err, user, info) => {
         if (err) return next(err);
-        if (!user) return res.redirect('/auth/login'); // Redirect if authentication fails
+        if (!user) return res.redirect('/auth/login');
 
         req.logIn(user, async (err) => {
             if (err) return next(err);
 
             try {
-                // Update user status to "Online"
                 await User.findByIdAndUpdate(user._id, { status: 'Online' });
-
-                // Redirect to the dashboard on successful login
-                return res.redirect('/dashboard');
+                res.redirect('/dashboard');
             } catch (error) {
-                // Handle any errors during the update
                 console.error('Error updating user status:', error);
                 return next(error);
             }
@@ -76,7 +73,7 @@ exports.loginUser = (req, res, next) => {
     })(req, res, next);
 };
 
-// Handle Google login
+// Handle Google OAuth login
 exports.googleLogin = passport.authenticate('google', { scope: ['profile', 'email'] });
 
 // Handle Google OAuth callback
@@ -84,21 +81,17 @@ exports.googleCallback = (req, res, next) => {
     passport.authenticate('google', (err, user, info) => {
         if (err) return next(err);
 
-        if (info && info.message && info.message.startsWith('/auth/set-password/')) {
-            return res.redirect(info.message); // Redirect to password setup page
+        if (info?.message?.startsWith('/auth/set-password/')) {
+            return res.redirect(info.message);
         }
 
         req.logIn(user, async (err) => {
             if (err) return next(err);
 
             try {
-                // Update user status to "Online"
                 await User.findByIdAndUpdate(user._id, { status: 'Online' });
-
-                // Redirect to the dashboard on successful login
-                return res.redirect('/dashboard');
+                res.redirect('/dashboard');
             } catch (error) {
-                // Handle any errors during the update
                 console.error('Error updating user status:', error);
                 return next(error);
             }
@@ -110,7 +103,7 @@ exports.googleCallback = (req, res, next) => {
 exports.setPassword = async (req, res) => {
     try {
         const userId = req.params.id;
-        // Validate ObjectId
+
         if (!mongoose.Types.ObjectId.isValid(userId)) {
             return res.redirect('/auth/login');
         }
@@ -127,13 +120,12 @@ exports.setPassword = async (req, res) => {
             return res.redirect('/auth/login');
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-        user.password = hashedPassword;
-        user.isPending = false; 
-        await User.findByIdAndUpdate(user._id, { status: 'Online' }); // Mark registration as complete
-        await user.save();
+        user.password = await bcrypt.hash(password, 10);
+        user.isPending = false;
 
-        // Log in the user and redirect to dashboard
+        await user.save();
+        await User.findByIdAndUpdate(user._id, { status: 'Online' });
+
         req.login(user, err => {
             if (err) {
                 console.error('Error during login:', err);
@@ -147,28 +139,26 @@ exports.setPassword = async (req, res) => {
     }
 };
 
-// Handle logout
+// Handle user logout
 exports.logoutUser = async (req, res, next) => {
     if (!req.user || !req.user._id) {
         console.error('User is not authenticated or user ID is missing');
-        return res.redirect('/'); // Redirect to home if user is not authenticated
+        return res.redirect('/');
     }
 
     try {
-        // Update user status to 'Offline'
         await User.findByIdAndUpdate(req.user._id, { status: 'Offline' });
 
-        // Log out the user
         req.logout(err => {
             if (err) {
                 console.error('Error during logout:', err);
-                return next(err); // Pass the error to the next middleware
+                return next(err);
             }
 
-            res.redirect('/'); // Redirect to home page after successful logout
+            res.redirect('/');
         });
     } catch (error) {
         console.error('Error updating user status on logout:', error);
-        return next(error); // Pass the error to the next middleware
+        return next(error);
     }
 };

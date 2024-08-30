@@ -1,4 +1,3 @@
-const User = require("../models/UserModel");
 
 // Show home page
 exports.showHomePage = (req, res) => {
@@ -13,8 +12,4 @@ exports.showDashboardPage = (req, res) => {
     return res.redirect('/auth/login');
   }
   res.render('dashboard', { user });
-};
-// Test route
-exports.test = (req, res) => {
-  res.render('test');
 };

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,23 +9,28 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="stylesheet" href="/css/styles.css">
 </head>
+
 <body>
-  <%- include('partials/header', { user: user }) %> <!-- Include the header partial with user data -->
+  <!-- Include the header partial with user data -->
+  <%- include('partials/header', { user: user }) %> 
 
   <main class="container my-5">
-    <h2 class="text-center">Welcome to the Chat App!</h2>
-    <p class="text-center">This is a chat application where you can connect and communicate with others in real-time.</p>
-    <p class="text-center">Some of the features include:</p>
-    <ul class="list-unstyled text-center">
-      <li><i class="fas fa-check"></i> Real-time messaging</li>
-      <li><i class="fas fa-check"></i> Private and group chats</li>
-      <li><i class="fas fa-check"></i> Easy to use and intuitive interface</li>
-    </ul>
-    <p class="text-center">Get started by clicking on the links above to log in or register.</p>
+    <div class="text-center">
+      <h2>Welcome to the Chat App!</h2>
+      <p>This is a chat application where you can connect and communicate with others in real-time.</p>
+      <p>Some of the features include:</p>
+      <ul class="list-unstyled">
+        <li><i class="fas fa-check"></i> Real-time messaging</li>
+        <li><i class="fas fa-check"></i> Private and group chats</li>
+        <li><i class="fas fa-check"></i> Easy to use and intuitive interface</li>
+      </ul>
+      <p>Get started by clicking on the links above to log in or register.</p>
+    </div>
   </main>
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
+
 </html>

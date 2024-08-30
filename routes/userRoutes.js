@@ -1,26 +1,25 @@
-const express = require('express');
-const router = express.Router();
-const usersController = require('../controllers/userController');
+const app = require("../importFiles/importFiles");
+const router = app.express.Router();
 
 // Search users
-router.get('/search', usersController.searchUsers);
+router.get('/search', app.usersController.searchUsers);
 
 // Send friend request
-router.post('/sendrequest', usersController.sendFriendRequest);
+router.post('/sendrequest', app.usersController.sendFriendRequest);
 
 // Get outgoing friend requests
-router.get('/outgoingrequests', usersController.getOutgoingRequests);
+router.get('/outgoingrequests', app.usersController.getOutgoingRequests);
 
 // Get incoming friend requests
-router.get('/incomingrequests', usersController.getIncomingRequests);
+router.get('/incomingrequests', app.usersController.getIncomingRequests);
 
 // Route to accept a friend request
-router.post('/acceptrequest', usersController.acceptFriendRequest);
+router.post('/acceptrequest', app.usersController.acceptFriendRequest);
 
 // Route to reject a friend request
-router.post('/rejectrequest', usersController.rejectFriendRequest);
+router.post('/rejectrequest', app.usersController.rejectFriendRequest);
 
 // Route to get the friend list
-router.get('/friends', usersController.getFriendsList);
+router.get('/friends', app.usersController.getFriendsList);
 
 module.exports = router;

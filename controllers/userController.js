@@ -1,22 +1,26 @@
 const User = require('../models/UserModel');
-const Request = require('../models/requestModel');
-const Friendship = require('../models/FriendshipModel')
+const Request = require('../models/RequestModel');
+const Friendship = require('../models/FriendshipModel');
 
-// Search Users Controller
+// searchUsers: Search for users excluding the current user's friends and self
 exports.searchUsers = async (req, res) => {
   try {
     const searchQuery = req.query.q?.trim();
     if (!searchQuery) {
       return res.status(400).json({ error: 'Search query is required.' });
     }
+
     const currentUser = req.user._id;
 
-    // Get friends of the current user
+    // Find all friends of the current user
     const friends = await Friendship.find({
       $or: [{ user1: currentUser }, { user2: currentUser }]
     }).lean();
-    const friendIds = friends.map(friend => (friend.user1.equals(currentUser) ? friend.user2 : friend.user1));
+    const friendIds = friends.map(friend => 
+      friend.user1.equals(currentUser) ? friend.user2 : friend.user1
+    );
 
+    // Search for users excluding the current user and their friends
     const users = await User.find({
       username: { $regex: `^${searchQuery}`, $options: 'i' },
       _id: { $ne: currentUser, $nin: friendIds }
@@ -24,10 +28,12 @@ exports.searchUsers = async (req, res) => {
     .select('username _id')
     .limit(5);
 
+    // Find outgoing friend requests from the current user
     const outgoingRequests = await Request.find({ requester: currentUser })
       .select('recipient')
       .lean();
 
+    // Add request status to the users
     const usersWithRequestStatus = users.map(user => {
       const hasSentRequest = outgoingRequests.some(req => req.recipient.equals(user._id));
       return { ...user._doc, hasSentRequest };
@@ -40,20 +46,20 @@ exports.searchUsers = async (req, res) => {
   }
 };
 
-// Send Friend Request Controller
+// sendFriendRequest: Send a friend request from the logged-in user
 exports.sendFriendRequest = async (req, res) => {
-  const { recipientId } = req.body;
-  const requesterId = req.user._id;
-
-  if (!recipientId) {
-    return res.status(400).json({ error: 'Recipient ID is required.' });
-  }
-
-  if (requesterId.equals(recipientId)) {
-    return res.status(400).json({ error: 'You cannot send a friend request to yourself.' });
-  }
-
   try {
+    const { recipientId } = req.body;
+    const requesterId = req.user._id;
+
+    if (!recipientId) {
+      return res.status(400).json({ error: 'Recipient ID is required.' });
+    }
+
+    if (requesterId.equals(recipientId)) {
+      return res.status(400).json({ error: 'You cannot send a friend request to yourself.' });
+    }
+
     const recipient = await User.findById(recipientId);
     if (!recipient) {
       return res.status(404).json({ error: 'Recipient not found.' });
@@ -80,7 +86,7 @@ exports.sendFriendRequest = async (req, res) => {
   }
 };
 
-// Fetch Outgoing Requests Controller
+// getOutgoingRequests: Retrieve all outgoing friend requests for the logged-in user
 exports.getOutgoingRequests = async (req, res) => {
   try {
     const outgoingRequests = await Request.find({ requester: req.user._id })
@@ -94,7 +100,7 @@ exports.getOutgoingRequests = async (req, res) => {
   }
 };
 
-// Fetch Incoming Requests Controller
+// getIncomingRequests: Retrieve all incoming friend requests for the logged-in user
 exports.getIncomingRequests = async (req, res) => {
   try {
     const incomingRequests = await Request.find({ recipient: req.user._id })
@@ -108,30 +114,27 @@ exports.getIncomingRequests = async (req, res) => {
   }
 };
 
-// Accept a friend request
+// acceptFriendRequest: Accept a friend request and create a friendship
 exports.acceptFriendRequest = async (req, res) => {
-  const { requestId } = req.body;
-
-  if (!requestId) {
-    return res.status(400).json({ error: 'Request ID is required.' });
-  }
-
   try {
-    // Find the request to update
+    const { requestId } = req.body;
+
+    if (!requestId) {
+      return res.status(400).json({ error: 'Request ID is required.' });
+    }
+
     const request = await Request.findById(requestId);
     if (!request) {
       return res.status(404).json({ error: 'Friend request not found.' });
     }
 
-    // Update the request status to 'Accepted'
     await Request.findByIdAndUpdate(requestId, { status: 'Accepted' }, { new: true });
 
-    // Create friendships for both users
-    await Friendship.create([
-      { user1: request.requester, user2: request.recipient }
-    ]);
+    await Friendship.create({
+      user1: request.requester,
+      user2: request.recipient
+    });
 
-    // Remove the request from the request collection
     await Request.deleteOne({ _id: requestId });
 
     res.status(200).json({ message: 'Friend request accepted successfully.' });
@@ -141,25 +144,22 @@ exports.acceptFriendRequest = async (req, res) => {
   }
 };
 
-// Reject a friend request
+// rejectFriendRequest: Reject a friend request and remove it from the database
 exports.rejectFriendRequest = async (req, res) => {
-  const { requestId } = req.body;
-
-  if (!requestId) {
-    return res.status(400).json({ error: 'Request ID is required.' });
-  }
-
   try {
-    // Find the request to update
+    const { requestId } = req.body;
+
+    if (!requestId) {
+      return res.status(400).json({ error: 'Request ID is required.' });
+    }
+
     const request = await Request.findById(requestId);
     if (!request) {
       return res.status(404).json({ error: 'Friend request not found.' });
     }
 
-    // Update the request status to 'Rejected'
     await Request.findByIdAndUpdate(requestId, { status: 'Rejected' }, { new: true });
 
-    // Remove the request from the request collection
     await Request.deleteOne({ _id: requestId });
 
     res.status(200).json({ message: 'Friend request rejected successfully.' });
@@ -169,32 +169,20 @@ exports.rejectFriendRequest = async (req, res) => {
   }
 };
 
-// Fetch the friend list for the logged-in user
+// getFriendsList: Fetch the list of friends for the logged-in user
 exports.getFriendsList = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Find friendships where the user is either user1 or user2
     const friendships = await Friendship.find({
       $or: [{ user1: userId }, { user2: userId }]
     }).populate('user1 user2', 'username _id status');
 
-    // Map friendships to extract the friend's information along with status
-    const friends = friendships.map(friendship => {
-      if (friendship.user1._id.equals(userId)) {
-        return {
-          _id: friendship.user2._id,
-          username: friendship.user2.username,
-          status: friendship.user2.status
-        };
-      } else {
-        return {
-          _id: friendship.user1._id,
-          username: friendship.user1.username,
-          status: friendship.user1.status
-        };
-      }
-    });
+    const friends = friendships.map(friendship => 
+      friendship.user1._id.equals(userId) 
+        ? { _id: friendship.user2._id, username: friendship.user2.username, status: friendship.user2.status }
+        : { _id: friendship.user1._id, username: friendship.user1.username, status: friendship.user1.status }
+    );
 
     res.json(friends);
   } catch (error) {

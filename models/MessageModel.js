@@ -9,6 +9,6 @@ const messageSchema = new Schema({
     readBy: [{ type: Schema.Types.ObjectId, ref: 'User' }] // Users who have read the message
   });
   
-  const Message = mongoose.model('Message', messageSchema);
-  module.exports = Message;
+const Message = mongoose.model('Message', messageSchema);
+module.exports = Message;
   

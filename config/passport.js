@@ -3,7 +3,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/UserModel');
 const bcrypt = require('bcrypt');
-require('dotenv').config(); // Load .env variables
+require('dotenv').config();
 
 // Serialize user for session
 passport.serializeUser((user, done) => {
@@ -20,9 +20,9 @@ passport.deserializeUser(async (id, done) => {
     }
 });
 
-// Local strategy for username/password authentication
+// Local strategy: Authenticate users using email and password
 passport.use(new LocalStrategy({
-    usernameField: 'email'
+    usernameField: 'email',
 }, async (email, password, done) => {
     try {
         const user = await User.findOne({ email });
@@ -41,33 +41,34 @@ passport.use(new LocalStrategy({
     }
 }));
 
-// Google strategy for Google OAuth
+// Google strategy: Authenticate users using Google OAuth
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: process.env.GOOGLE_CALLBACK_URL
+    callbackURL: process.env.GOOGLE_CALLBACK_URL,
 }, async (accessToken, refreshToken, profile, done) => {
     try {
         let user = await User.findOne({ googleId: profile.id });
 
         if (user) {
             if (user.isPending) {
-                // Redirect to set password page if registration is pending
+                // User has not set a password yet, redirect to set password page
                 return done(null, user, { message: `/auth/set-password/${user._id}` });
             }
-            // Redirect to dashboard if user is already registered and not pending
+            // User is fully registered, redirect to dashboard
             return done(null, user, { message: '/dashboard' });
-        } else {
-            // Create a new user and redirect to set password page
-            user = new User({
-                googleId: profile.id,
-                username: profile.displayName,
-                email: profile.emails[0].value,
-                isPending: true // Mark as pending registration
-            });
-            await user.save();
-            return done(null, user, { message: `/auth/set-password/${user._id}` });
-        }
+        } 
+
+        // New user, create account and mark as pending registration
+        user = new User({
+            googleId: profile.id,
+            username: profile.displayName,
+            email: profile.emails[0].value,
+            isPending: true, // Mark user as pending until they set a password
+        });
+        await user.save();
+        return done(null, user, { message: `/auth/set-password/${user._id}` });
+        
     } catch (err) {
         return done(err);
     }

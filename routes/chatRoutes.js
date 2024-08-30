@@ -1,15 +1,13 @@
-const express = require('express');
-const router = express.Router();
-const chatController = require('../controllers/chatController');
-const authMiddleware = require('../middleware/authMiddleware');
+const app = require("../importFiles/importFiles");
+const router = app.express.Router();
 
 // Route to show the chat page
-router.get('/:userId', authMiddleware, chatController.showChatPage);
+router.get('/:userId', app.authMiddleware, app.chatController.showChatPage);
 
 // Route to send a message
-router.post('/send', chatController.sendMessage);
+router.post('/send', app.chatController.sendMessage);
 
 // Route to get messages
-router.get('/history/:currentRecipientId', chatController.getMessages);
+router.get('/history/:currentRecipientId', app.chatController.getMessages);
 
 module.exports = router;

@@ -1,15 +1,14 @@
 const http = require('http');
 const express = require('express');
-const { Server } = require('socket.io');
 const path = require('path');
-const passport = require('./config/passport'); // Adjust path if necessary
+const passport = require('./config/passport');
 const session = require('express-session');
 require('dotenv').config();
 
 const connectDb = require('./config/dbConnection');
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = require('./config/socket')(server); // Load WebSocket configuration
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
@@ -24,7 +23,7 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }
+    cookie: { secure: false } // Adjust according to your environment (secure: true for HTTPS)
 }));
 
 // Initialize Passport
@@ -41,28 +40,6 @@ app.use('/users', require('./routes/userRoutes'));
 app.use('/chat', require('./routes/chatRoutes'));
 
 connectDb(); // Connect to the database
-
-io.on('connection', (socket) => {
-    console.log('A user connected:', socket.id);
-
-    // Handle status updates
-    socket.on('statusUpdate', (statusData) => {
-        // Emit status update to all connected clients
-        io.emit('statusUpdate', statusData);
-    });
-
-    // Handle chat messages
-    socket.on('chatMessage', (message) => {
-        // Broadcast message to the recipient
-        io.to(message.recipient).emit('message', message);
-        io.to(message.sender).emit('message', message); // Ensure sender also gets their own message
-    });
-
-    // Handle disconnections
-    socket.on('disconnect', () => {
-        console.log('User disconnected:', socket.id);
-    });
-});
 
 // Start the server
 const PORT = process.env.PORT || 3000;

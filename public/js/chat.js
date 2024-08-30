@@ -33,18 +33,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
             try {
                 // Send message via API
-                await fetch('/chat/send', {
+                const response = await fetch('/chat/send', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(messageData)
                 });
 
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API Error: ${response.status} - ${errorText}`);
+                }
+
                 // Emit message via Socket.IO
-                socket.emit('chatMessage', {
-                    recipient: currentRecipientId,
-                    sender: loggedInUserId,
-                    text: message
-                });
+                socket.emit('chatMessage', messageData);
 
                 messageInput.value = '';
             } catch (error) {
@@ -57,7 +58,13 @@ document.addEventListener('DOMContentLoaded', function () {
     async function initFriendsList() {
         try {
             const response = await fetch('/users/friends');
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`API Error: ${response.status} - ${errorText}`);
+            }
+
             const friends = await response.json();
+            friendsList.innerHTML = ''; // Clear the list before adding new items
             friends.forEach(friend => {
                 const friendItem = document.createElement('li');
                 friendItem.className = 'list-group-item';
@@ -100,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const response = await fetch(`/chat/history/${currentRecipientId}`);
                 if (!response.ok) {
                     const errorText = await response.text();
-                    throw new Error(`Error: ${response.status} - ${errorText}`);
+                    throw new Error(`API Error: ${response.status} - ${errorText}`);
                 }
 
                 const messages = await response.json();

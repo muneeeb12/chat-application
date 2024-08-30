@@ -1,33 +1,23 @@
 document.addEventListener('DOMContentLoaded', function () {
+  // Cache DOM elements
   const searchInput = document.querySelector('#searchInput');
   const searchButton = document.querySelector('#search-button');
   const searchResults = document.querySelector('#searchResults');
   const incomingRequestsList = document.querySelector('#incomingRequests');
   const friendsList = document.querySelector('#friendsList');
-  //const loggedInUserId = '<%= user._id %>'; // Ensure this is rendered correctly from EJS
+  // const loggedInUserId = '<%= user._id %>'; // Ensure this is rendered correctly from EJS
 
-  // Load Incoming Friend Requests
+  // Function to load incoming friend requests
   async function loadIncomingRequests() {
     try {
       const response = await fetch('/users/incomingrequests');
       const incomingRequests = await response.json();
       incomingRequestsList.innerHTML = '';
+
       if (incomingRequests.length > 0) {
         incomingRequests.forEach(request => {
-          const incomingRequestItem = document.createElement('li');
-          incomingRequestItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
-          incomingRequestItem.innerHTML = `
-            ${request.requester.username}
-            <div class="btn-group">
-              <button class="btn btn-sm btn-success accept-request-button" data-id="${request._id}">
-                <i class="fas fa-check"></i>
-              </button>
-              <button class="btn btn-sm btn-danger reject-request-button" data-id="${request._id}">
-                <i class="fas fa-times"></i>
-              </button>
-            </div>
-          `;
-          incomingRequestsList.appendChild(incomingRequestItem);
+          const item = createIncomingRequestItem(request);
+          incomingRequestsList.appendChild(item);
         });
       } else {
         incomingRequestsList.innerHTML = '<li class="list-group-item">No incoming requests.</li>';
@@ -37,7 +27,25 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // Load Friends List
+  // Function to create a list item for incoming requests
+  function createIncomingRequestItem(request) {
+    const item = document.createElement('li');
+    item.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
+    item.innerHTML = `
+      ${request.requester.username}
+      <div class="btn-group">
+        <button class="btn btn-sm btn-success accept-request-button" data-id="${request._id}">
+          <i class="fas fa-check"></i>
+        </button>
+        <button class="btn btn-sm btn-danger reject-request-button" data-id="${request._id}">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    `;
+    return item;
+  }
+
+  // Function to load friends list
   async function loadFriendsList() {
     friendsList.innerHTML = '<li class="list-group-item">Loading friends...</li>';
 
@@ -52,39 +60,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (friends.length > 0) {
         const fragment = document.createDocumentFragment();
-
         friends.forEach(friend => {
-          const friendItem = document.createElement('li');
-          friendItem.classList.add('list-group-item');
-
-          // Create link element
-          const friendLink = document.createElement('a');
-          friendLink.href = `/chat/${loggedInUserId}`; // Use logged-in user ID for the link
-          friendLink.textContent = friend.username;
-
-          // Apply link styles
-          Object.assign(friendLink.style, {
-            color: '#007bff',
-            textDecoration: 'none',
-            display: 'block',
-            padding: '10px'
-          });
-
-          // Add hover effect on the list item
-          friendItem.style.position = 'relative';
-          friendItem.style.cursor = 'pointer';
-          friendItem.addEventListener('mouseover', () => {
-            friendItem.style.backgroundColor = '#f0f0f0';
-          });
-          friendItem.addEventListener('mouseout', () => {
-            friendItem.style.backgroundColor = '';
-          });
-
-          // Append link to list item and to the fragment
-          friendItem.appendChild(friendLink);
-          fragment.appendChild(friendItem);
+          const item = createFriendItem(friend);
+          fragment.appendChild(item);
         });
-
         friendsList.appendChild(fragment);
       } else {
         friendsList.innerHTML = '<li class="list-group-item">No friends yet.</li>';
@@ -95,7 +74,29 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // Perform User Search
+  // Function to create a list item for friends
+  function createFriendItem(friend) {
+    const item = document.createElement('li');
+    item.classList.add('list-group-item');
+
+    const link = document.createElement('a');
+    link.href = `/chat/${loggedInUserId}`; // Use logged-in user ID for the link
+    link.textContent = friend.username;
+    link.style.cssText = 'color: #007bff; text-decoration: none; display: block; padding: 10px;';
+    
+    item.style.cssText = 'position: relative; cursor: pointer;';
+    item.addEventListener('mouseover', () => {
+      item.style.backgroundColor = '#f0f0f0';
+    });
+    item.addEventListener('mouseout', () => {
+      item.style.backgroundColor = '';
+    });
+
+    item.appendChild(link);
+    return item;
+  }
+
+  // Function to perform user search
   async function performSearch() {
     const query = searchInput.value.trim();
     if (query.length > 0) {
@@ -103,17 +104,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const response = await fetch(`/users/search?q=${encodeURIComponent(query)}`);
         const users = await response.json();
         searchResults.innerHTML = '';
+
         if (users.length > 0) {
           users.forEach(user => {
-            const resultItem = document.createElement('li');
-            resultItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
-            resultItem.innerHTML = `
-              ${user.username}
-              <button class="btn btn-sm ${user.hasSentRequest ? 'btn-warning' : 'btn-primary'} send-request-button" data-id="${user._id}">
-                ${user.hasSentRequest ? 'Request Sent' : 'Add Friend'}
-              </button>
-            `;
-            searchResults.appendChild(resultItem);
+            const item = createSearchResultItem(user);
+            searchResults.appendChild(item);
           });
         } else {
           searchResults.innerHTML = '<li class="list-group-item">No users found.</li>';
@@ -126,7 +121,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // Handle Friend Request (Accept/Reject)
+  // Function to create a list item for search results
+  function createSearchResultItem(user) {
+    const item = document.createElement('li');
+    item.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
+    item.innerHTML = `
+      ${user.username}
+      <button class="btn btn-sm ${user.hasSentRequest ? 'btn-warning' : 'btn-primary'} send-request-button" data-id="${user._id}">
+        ${user.hasSentRequest ? 'Request Sent' : 'Add Friend'}
+      </button>
+    `;
+    return item;
+  }
+
+  // Function to handle friend request (accept/reject)
   async function handleFriendRequest(requestId, action, listItem) {
     try {
       const response = await fetch(`/users/${action.toLowerCase()}request`, {
@@ -149,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // Send Friend Request
+  // Function to send a friend request
   async function sendFriendRequest(recipientId, button) {
     try {
       const response = await fetch('/users/sendrequest', {
@@ -171,8 +179,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // Event Listeners
+  // Event listeners
   searchInput.addEventListener('input', performSearch);
+
   searchResults.addEventListener('click', function (event) {
     if (event.target.closest('.send-request-button')) {
       const button = event.target.closest('.send-request-button');

@@ -1,15 +1,13 @@
-const express = require('express');
-const router = express.Router();
-const homeController = require('../controllers/homeController');
-const authMiddleware = require('../middleware/authMiddleware');
+const app = require("../importFiles/importFiles");
+const router = app.express.Router();
 
 // Route to show home page
-router.get('/', homeController.showHomePage);
+router.get('/', app.homeController.showHomePage);
 
 // Route to show dashboard page
-router.get('/dashboard', authMiddleware, homeController.showDashboardPage);
+router.get('/dashboard', app.authMiddleware, app.homeController.showDashboardPage);
 
 // Test route for auth middleware
-router.get('/test', authMiddleware, homeController.test);
+// router.get('/test', app.authMiddleware, app.test);
 
 module.exports = router;
