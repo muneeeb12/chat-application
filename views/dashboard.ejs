@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,59 +9,50 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="stylesheet" href="/css/styles.css">
 </head>
+
 <body>
-  <header class="bg-primary text-white py-2 mb-4">
-    <div class="container">
-      <nav class="navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="/">
-          <i class="fas fa-comments"></i> Chat App
-        </a>
-        <div class="ml-auto d-flex align-items-center">
-          <span class="mr-3"><%= user.username %></span> <!-- Display username dynamically -->
-          <a href="/auth/logout" class="btn btn-outline-light">Logout</a>
-        </div>
-      </nav>
-    </div>
-  </header>
+  <!-- Include header partial -->
+  <%- include('partials/header', { user: user }) %>
 
-  <main class="container">
-    <div class="row">
-      <!-- Search Users Section -->
-      <div class="col-md-4 mb-4">
-        <h3>Search Users</h3>
-        <form id="searchForm">
-          <div class="input-group">
-            <input type="text" class="form-control" id="searchInput" placeholder="Search for users...">
-            <div class="input-group-append">
-              <button class="btn btn-outline-primary" type="button" id="search-button">Search</button>
+    <main class="container">
+      <div class="row">
+        <!-- Search Users Section -->
+        <div class="col-md-4 mb-4">
+          <h3>Search Users</h3>
+          <form id="searchForm">
+            <div class="input-group">
+              <input type="text" class="form-control" id="searchInput" placeholder="Search for users...">
+              <div class="input-group-append">
+                <button class="btn btn-outline-primary" type="button" id="search-button">Search</button>
+              </div>
             </div>
-          </div>
-        </form>
-        <ul id="searchResults" class="list-group mt-2"></ul>
-      </div>
+          </form>
+          <ul id="searchResults" class="list-group mt-2"></ul>
+        </div>
 
-      <!-- Incoming Friend Requests Section -->
-      <div class="col-md-4 mb-4">
-        <h3>Incoming Friend Requests</h3>
-        <ul id="incomingRequests" class="list-group">
-          <!-- Incoming requests will be dynamically populated here -->
-        </ul>
-      </div>
+        <!-- Incoming Friend Requests Section -->
+        <div class="col-md-4 mb-4">
+          <h3>Incoming Friend Requests</h3>
+          <ul id="incomingRequests" class="list-group">
+            <!-- Incoming requests will be dynamically populated here -->
+          </ul>
+        </div>
 
-      <!-- Friends List Section -->
-      <div class="col-md-4 mb-4">
-        <h3>Your Friends</h3>
-        <ul id="friendsList" class="list-group">
-          <!-- Friend list will be dynamically populated here -->
-        </ul>
+        <!-- Friends List Section -->
+        <div class="col-md-4 mb-4">
+          <h3>Your Friends</h3>
+          <ul id="friendsList" class="list-group">
+            <!-- Friend list will be dynamically populated here -->
+          </ul>
+        </div>
       </div>
-    </div>
-  </main>
+    </main>
 
-  <script>
-    const loggedInUserId = '<%= user._id %>'; // Pass user ID to JavaScript
-  </script>
-  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-  <script src="/js/dashboard.js"></script> <!-- Updated to use chat.js -->
+    <script>
+      const loggedInUserId = '<%= user._id %>'; // Pass user ID to JavaScript
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="/js/dashboard.js"></script> <!-- Updated to use chat.js -->
 </body>
+
 </html>
