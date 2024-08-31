@@ -10,19 +10,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // Get the logged-in user's ID from the template
     const loggedInUserId = document.querySelector('script[data-user-id]').dataset.userId;
 
-    // Join the user's room for receiving updates
-    socket.emit('joinRooms', { userId: loggedInUserId });
-
     // Listen for incoming messages
+    socket.on('connect', () => {
+        console.log('Connected to the server');
+    });
+
     socket.on('message', (message) => {
         if (message.recipient === currentRecipientId || message.sender === loggedInUserId) {
             displayMessage(message);
         }
-    });
-
-    // Listen for status updates
-    socket.on('updateStatus', ({ userId, status }) => {
-        updateFriendStatus(userId, status);
     });
 
     messageForm.addEventListener('submit', (event) => {
@@ -76,21 +72,16 @@ document.addEventListener('DOMContentLoaded', function () {
         chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
     }
 
-    // Update the status of a friend in the list
-    function updateFriendStatus(userId, status) {
-        const friendItem = friendsList.querySelector(`li[data-user-id="${userId}"]`);
-        if (friendItem) {
-            const statusDot = friendItem.querySelector('.status-dot');
-            statusDot.className = `status-dot ${status.toLowerCase()}`;
-        }
-    }
-
     friendsList.addEventListener('click', (event) => {
         const friendItem = event.target.closest('li');
         if (friendItem) {
             currentRecipientId = friendItem.dataset.userId;
-            loadMessages(); // Load previous messages when a conversation is selected
+
+            // Join the room for this recipient
+            socket.emit('joinRoom', { roomId: currentRecipientId });
+
             messageForm.style.display = 'block'; // Show the input form
+            loadMessages(); // Load previous messages when a conversation is selected
         }
     });
 
@@ -103,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     const errorText = await response.text();
                     throw new Error(`API Error: ${response.status} - ${errorText}`);
                 }
-
+                
                 const messages = await response.json();
                 messages.forEach(message => {
                     displayMessage({

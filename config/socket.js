@@ -1,39 +1,35 @@
-const { Server } = require("socket.io");
+const socketIO = require('socket.io');
+const DirectMessage = require('../models/DirectMessageModel'); // Assuming this is your message model
 
 module.exports = function (server) {
-    const io = new Server(server);
+    const io = socketIO(server);
 
     io.on('connection', (socket) => {
-        console.log('A user connected:', socket.id);
+        console.log('A user connected');
 
-        // Handle joining rooms for real-time updates
-        socket.on('joinRooms', ({ userId }) => {
-            // Join the user's room to receive updates related to them
-            socket.join(userId);
+        // Listen for 'message' events from clients
+        socket.on('message', async (msg) => {
+            try {
+                // Save the message to the database
+                const newMessage = new DirectMessage(msg);
+                await newMessage.save();
+
+                // Broadcast the message to the recipient
+                io.to(msg.recipient).emit('message', {
+                    _id: newMessage._id,
+                    sender: newMessage.sender,
+                    recipient: newMessage.recipient,
+                    content: newMessage.content,
+                    sentAt: newMessage.sentAt,
+                    senderName: msg.senderName // Assuming senderName is passed with the message
+                });
+            } catch (error) {
+                console.error('Error saving message:', error);
+            }
         });
 
-        // Handle sending messages
-        socket.on('message', (message) => {
-            // Emit the message to the recipient's room
-            io.to(message.recipient).emit('message', {
-                sender: message.sender,
-                senderName: 'Some User', // Fetch the sender's name from the database
-                content: message.content,
-                recipient: message.recipient
-            });
-
-        });
-
-        // Handle user status updates
-        socket.on('updateStatus', ({ userId, status }) => {
-            // Broadcast the status update to all friends (rooms the user belongs to)
-            io.to(userId).emit('updateStatus', { userId, status });
-        });
-
-        // Handle disconnects
         socket.on('disconnect', () => {
-            console.log('User disconnected:', socket.id);
-            // Perform any necessary cleanup, like setting the user status to offline
+            console.log('A user disconnected');
         });
     });
 
