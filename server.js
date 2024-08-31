@@ -3,11 +3,13 @@ const express = require('express');
 const path = require('path');
 const passport = require('./config/passport');
 const session = require('express-session');
+const socketIO = require('./config/socket');
 require('dotenv').config();
 
 const connectDb = require('./config/dbConnection');
 const app = express();
 const server = http.createServer(app);
+const io = socketIO(server);
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
