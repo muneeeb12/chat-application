@@ -8,7 +8,6 @@ require('dotenv').config();
 const connectDb = require('./config/dbConnection');
 const app = express();
 const server = http.createServer(app);
-const io = require('./config/socket')(server); // Load WebSocket configuration
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
