@@ -10,20 +10,22 @@ document.addEventListener('DOMContentLoaded', function () {
     // Get the logged-in user's ID from the template
     const loggedInUserId = document.querySelector('script[data-user-id]').dataset.userId;
 
-    // Listen for incoming messages
-    socket.on('connect', () => {
-        console.log('Connected to the server');
-    });
+    // Join the user's room for receiving updates
+    socket.emit('joinRooms', { userId: loggedInUserId });
 
+    // Listen for incoming messages
     socket.on('message', (message) => {
-        console.log("1.",message);
         if (message.recipient === currentRecipientId || message.sender === loggedInUserId) {
             displayMessage(message);
         }
     });
 
-    messageForm.addEventListener('submit', async (event) => {
-        console.log(". messageForm")
+    // Listen for status updates
+    socket.on('updateStatus', ({ userId, status }) => {
+        updateFriendStatus(userId, status);
+    });
+
+    messageForm.addEventListener('submit', (event) => {
         event.preventDefault(); // Prevent the default form submission
         const messageContent = messageInput.value.trim();
         if (messageContent && currentRecipientId) {
@@ -32,39 +34,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 recipient: currentRecipientId,
                 content: messageContent
             };
-    
-            try {
-                // Send the message via the API
-                const response = await fetch('/chat/send', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(message)
-                });
-    
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`API Error: ${response.status} - ${errorText}`);
-                }
-    
-                const savedMessage = await response.json();
-                displayMessage({ ...message, senderName: 'You' }); // Display the sent message
-                messageInput.value = ''; // Clear the input field
-    
-                // Optionally, send the message via Socket.IO for real-time communication
-                socket.emit('message', savedMessage.newMessage);
-    
-            } catch (error) {
-                console.error('Error sending message:', error);
-            }
+
+            // Send the message via Socket.IO
+            socket.emit('message', message);
+            displayMessage({ ...message, senderName: 'You' }); // Display the sent message
+            messageInput.value = ''; // Clear the input field
         }
     });
-    
+
     // Initialize friends list
     async function initFriendsList() {
         try {
-            console.log("1.initfriendlist")
             const response = await fetch('/users/friends');
             if (!response.ok) {
                 const errorText = await response.text();
@@ -89,7 +69,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Function to display a message in the chat UI
     function displayMessage(message) {
-        console.log("2.displaymessage")
         const messageElement = document.createElement('div');
         messageElement.className = 'message';
         messageElement.innerHTML = `<strong>${message.sender === loggedInUserId ? 'You' : message.senderName}</strong>: ${message.content}`;
@@ -97,22 +76,25 @@ document.addEventListener('DOMContentLoaded', function () {
         chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
     }
 
+    // Update the status of a friend in the list
+    function updateFriendStatus(userId, status) {
+        const friendItem = friendsList.querySelector(`li[data-user-id="${userId}"]`);
+        if (friendItem) {
+            const statusDot = friendItem.querySelector('.status-dot');
+            statusDot.className = `status-dot ${status.toLowerCase()}`;
+        }
+    }
+
     friendsList.addEventListener('click', (event) => {
-        console.log("2. friendlist eventlistener")
         const friendItem = event.target.closest('li');
         if (friendItem) {
             currentRecipientId = friendItem.dataset.userId;
-
-            // Ensure the message input form is visible when a friend is selected
+            loadMessages(); // Load previous messages when a conversation is selected
             messageForm.style.display = 'block'; // Show the input form
-
-
-            loadMessages(); // Load messages when a conversation is selected
         }
     });
 
     async function loadMessages() {
-        console.log("3. loadmessages")
         if (currentRecipientId) {
             chatMessages.innerHTML = ''; // Clear the chat box before loading new messages
             try {
@@ -121,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     const errorText = await response.text();
                     throw new Error(`API Error: ${response.status} - ${errorText}`);
                 }
-                
+
                 const messages = await response.json();
                 messages.forEach(message => {
                     displayMessage({

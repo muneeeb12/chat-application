@@ -23,35 +23,11 @@ exports.showChatPage = async (req, res) => {
   }
 };
 
-// sendMessage: Send a direct message from the logged-in user to a recipient
-exports.sendMessage = async (req, res) => {
-  try {
-    const { recipient, content } = req.body;
-    const sender = req.user._id;
-
-    if (!recipient || !content) {
-      return res.status(400).json({ error: 'Recipient and content are required' });
-    }
-
-    const newMessage = new DirectMessage({ recipient, content, sender });
-    console.log("Message details:", newMessage);
-
-    await newMessage.save();
-    res.status(201).json(newMessage);
-  } catch (error) {
-    console.error('Error sending message:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-};
-
 // getMessages: Retrieve messages between the logged-in user and a recipient
 exports.getMessages = async (req, res) => {
   try {
     const recipientId = req.params.currentRecipientId;
     const senderId = req.user ? req.user._id : null;
-
-    console.log("Recipient ID:", recipientId);
-    console.log("Sender ID:", senderId);
 
     if (!recipientId || !senderId) {
       return res.status(400).json({ error: 'Recipient and sender IDs are required' });
@@ -64,7 +40,6 @@ exports.getMessages = async (req, res) => {
       ]
     }).populate('sender recipient');
 
-    console.log("Messages found:", messages);
     res.json(messages);
   } catch (error) {
     console.error('Error fetching messages:', error);

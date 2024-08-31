@@ -4,9 +4,6 @@ const router = app.express.Router();
 // Route to show the chat page
 router.get('/:userId', app.authMiddleware, app.chatController.showChatPage);
 
-// Route to send a message
-router.post('/send', app.chatController.sendMessage);
-
 // Route to get messages
 router.get('/history/:currentRecipientId', app.chatController.getMessages);
 
